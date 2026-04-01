@@ -744,9 +744,11 @@ export default function InsightEngine() {
                 </p>
                 <input
                   id="hp-field"
+                  name="website_url"
                   type="text"
                   tabIndex={-1}
-                  autoComplete="off"
+                  autoComplete="new-password"
+                  aria-hidden="true"
                   style={{
                     position: "absolute",
                     left: "-9999px",
@@ -754,6 +756,7 @@ export default function InsightEngine() {
                     height: 0,
                     width: 0,
                     overflow: "hidden",
+                    pointerEvents: "none",
                   }}
                 />
                 <div style={{ display: "flex", gap: 12, maxWidth: 400, margin: "0 auto" }}>
