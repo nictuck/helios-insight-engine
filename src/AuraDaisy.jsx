@@ -98,7 +98,7 @@ export default function AuraDaisy({ scores, animate }) {
         scoreArr.reduce((a, s) => a + Math.pow(s - avg, 2), 0) / CATEGORIES.length;
       const balance = Math.max(0, 1 - variance / 20);
 
-      const minL = 55, maxL = 185, minW = 38, maxW = 80;
+      const minL = 60, maxL = 220, minW = 42, maxW = 95;
       const total = CATEGORIES.length;
 
       // Draw petals (largest first so small ones render on top)
@@ -225,7 +225,7 @@ export default function AuraDaisy({ scores, animate }) {
       ref={canvasRef}
       width={520}
       height={520}
-      style={{ width: "100%", maxWidth: 420 }}
+      style={{ width: "min(100%, max(320px, 80vw))", maxWidth: 600 }}
     />
   );
 }

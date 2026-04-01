@@ -598,11 +598,11 @@ export default function InsightEngine() {
         {screen === "results" && (
           <div style={{ opacity: fadeIn ? 1 : 0, transition: "opacity 0.6s ease", transitionDelay: "0.1s" }}>
             <h1 style={{ ...styles.h1, fontSize: 34, marginBottom: 8 }}>Your Life Diagnostic</h1>
-            <p style={{ ...styles.subtitle, fontSize: 15, marginBottom: 32 }}>
+            <p style={{ ...styles.subtitle, fontSize: 15, marginBottom: 12 }}>
               Each shape represents a dimension of your life. Larger blooms are thriving. Smaller ones are asking for attention. The brighter the center, the more balanced your life feels.
             </p>
 
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: 32 }}>
+            <div style={{ display: "flex", justifyContent: "center", marginTop: -60, marginBottom: -56 }}>
               <AuraDaisy scores={scores} animate={showChart} />
             </div>
 
