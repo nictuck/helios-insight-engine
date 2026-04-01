@@ -154,9 +154,9 @@ function RadarChart({ scores, animate }) {
             y={ly}
             textAnchor="middle"
             dominantBaseline="middle"
-            fill="rgba(212,165,116,0.7)"
+            fill="#b8b0a0"
             fontSize="9"
-            fontFamily="'Cormorant Garamond', serif"
+            fontFamily="'Jost', sans-serif"
             letterSpacing="0.5"
           >
             {cat.label}
@@ -277,7 +277,7 @@ function SliderInput({ value, onChange }) {
             fontSize: 11,
             fontWeight: 600,
             color: "#D4A574",
-            fontFamily: "'Cormorant Garamond', serif",
+            fontFamily: "'Jost', sans-serif",
             transition: dragging ? "none" : "left 0.15s ease",
           }}
         >
@@ -285,10 +285,10 @@ function SliderInput({ value, onChange }) {
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-        <span style={{ fontSize: 10, color: "rgba(212,165,116,0.35)", fontFamily: "'Cormorant Garamond', serif" }}>
+        <span style={{ fontSize: 11, color: "#8a8070", fontFamily: "'Jost', sans-serif" }}>
           Needs attention
         </span>
-        <span style={{ fontSize: 10, color: "rgba(212,165,116,0.35)", fontFamily: "'Cormorant Garamond', serif" }}>
+        <span style={{ fontSize: 11, color: "#8a8070", fontFamily: "'Jost', sans-serif" }}>
           Thriving
         </span>
       </div>
@@ -397,8 +397,8 @@ export default function InsightEngine() {
       .split("\n\n")
       .filter(Boolean)
       .map((block, i) => {
-        block = block.replace(/\*\*(.+?)\*\*/g, '<strong style="color:#D4A574">$1</strong>');
-        block = block.replace(/\*(.+?)\*/g, '<em style="color:rgba(212,165,116,0.7)">$1</em>');
+        block = block.replace(/\*\*(.+?)\*\*/g, '<strong style="color:#E8C97A">$1</strong>');
+        block = block.replace(/\*(.+?)\*/g, '<em style="color:#b8b0a0">$1</em>');
         if (block.startsWith("1.") || block.startsWith("2.") || block.startsWith("3.")) {
           return (
             <p key={i} style={{ margin: "12px 0", paddingLeft: 8 }} dangerouslySetInnerHTML={{ __html: block }} />
@@ -412,8 +412,8 @@ export default function InsightEngine() {
     app: {
       minHeight: "100vh",
       background: "#0D0D12",
-      color: "rgba(235,225,210,0.85)",
-      fontFamily: "'Cormorant Garamond', serif",
+      color: "#EDE8DC",
+      fontFamily: "'Jost', sans-serif",
       position: "relative",
       overflow: "hidden",
     },
@@ -462,22 +462,24 @@ export default function InsightEngine() {
       fontSize: 14,
       letterSpacing: 6,
       textTransform: "uppercase",
-      color: "rgba(212,165,116,0.5)",
+      color: "#C9A84C",
+      fontFamily: "'Jost', sans-serif",
       fontWeight: 300,
     },
     h1: {
       fontSize: 42,
       fontWeight: 300,
-      lineHeight: 1.2,
-      color: "#EBE1D2",
+      lineHeight: 1.15,
+      color: "#EDE8DC",
+      fontFamily: "'Cormorant Garamond', serif",
       marginBottom: 20,
       textAlign: "center",
       letterSpacing: -0.5,
     },
     subtitle: {
-      fontSize: 18,
-      lineHeight: 1.7,
-      color: "rgba(235,225,210,0.55)",
+      fontSize: 16,
+      lineHeight: 1.85,
+      color: "#b8b0a0",
       textAlign: "center",
       maxWidth: 480,
       margin: "0 auto 40px",
@@ -489,10 +491,10 @@ export default function InsightEngine() {
       justifyContent: "center",
       padding: "16px 48px",
       background: "transparent",
-      border: "1px solid rgba(212,165,116,0.4)",
-      color: "#D4A574",
-      fontSize: 15,
-      fontFamily: "'Cormorant Garamond', serif",
+      border: "1px solid rgba(201,168,76,0.5)",
+      color: "#C9A84C",
+      fontSize: 13,
+      fontFamily: "'Jost', sans-serif",
       letterSpacing: 3,
       textTransform: "uppercase",
       cursor: "pointer",
@@ -500,13 +502,13 @@ export default function InsightEngine() {
       fontWeight: 500,
     },
     btnHover: {
-      background: "rgba(212,165,116,0.08)",
-      borderColor: "#D4A574",
-      boxShadow: "0 0 30px rgba(212,165,116,0.15)",
+      background: "rgba(201,168,76,0.08)",
+      borderColor: "#C9A84C",
+      boxShadow: "0 0 30px rgba(201,168,76,0.15)",
     },
     privacyNote: {
       fontSize: 12,
-      color: "rgba(212,165,116,0.3)",
+      color: "#8a8070",
       textAlign: "center",
       marginTop: 24,
       letterSpacing: 1,
@@ -526,14 +528,17 @@ export default function InsightEngine() {
       fontSize: 11,
       letterSpacing: 4,
       textTransform: "uppercase",
-      color: "rgba(212,165,116,0.45)",
+      color: "#C9A84C",
+      fontFamily: "'Jost', sans-serif",
+      fontWeight: 400,
       marginBottom: 12,
     },
     questionText: {
       fontSize: 26,
       fontWeight: 300,
       lineHeight: 1.4,
-      color: "#EBE1D2",
+      color: "#EDE8DC",
+      fontFamily: "'Cormorant Garamond', serif",
       marginBottom: 40,
       minHeight: 80,
     },
@@ -546,9 +551,9 @@ export default function InsightEngine() {
     backBtn: {
       background: "none",
       border: "none",
-      color: "rgba(212,165,116,0.4)",
+      color: "#8a8070",
       fontSize: 13,
-      fontFamily: "'Cormorant Garamond', serif",
+      fontFamily: "'Jost', sans-serif",
       letterSpacing: 2,
       cursor: "pointer",
       padding: "8px 0",
@@ -557,10 +562,10 @@ export default function InsightEngine() {
     nextBtn: {
       padding: "12px 36px",
       background: "transparent",
-      border: "1px solid rgba(212,165,116,0.4)",
-      color: "#D4A574",
+      border: "1px solid rgba(201,168,76,0.5)",
+      color: "#C9A84C",
       fontSize: 13,
-      fontFamily: "'Cormorant Garamond', serif",
+      fontFamily: "'Jost', sans-serif",
       letterSpacing: 3,
       textTransform: "uppercase",
       cursor: "pointer",
@@ -628,14 +633,14 @@ export default function InsightEngine() {
               >
                 ← Back
               </button>
-              <span style={{ fontSize: 12, color: "rgba(212,165,116,0.25)", letterSpacing: 1 }}>
+              <span style={{ fontSize: 12, color: "#8a8070", letterSpacing: 1 }}>
                 {answeredCount} of {totalQuestions}
               </span>
               <button
                 style={{
                   ...styles.nextBtn,
                   ...(hoveredBtn === "next"
-                    ? { background: "rgba(212,165,116,0.08)", borderColor: "#D4A574" }
+                    ? { background: "rgba(201,168,76,0.08)", borderColor: "#C9A84C" }
                     : {}),
                 }}
                 onMouseEnter={() => setHoveredBtn("next")}
@@ -656,8 +661,8 @@ export default function InsightEngine() {
                     width: 8,
                     height: 8,
                     borderRadius: "50%",
-                    border: `1px solid ${i === currentCategory ? "rgba(212,165,116,0.6)" : "rgba(212,165,116,0.15)"}`,
-                    background: i < currentCategory ? "rgba(212,165,116,0.3)" : i === currentCategory ? "rgba(212,165,116,0.15)" : "transparent",
+                    border: `1px solid ${i === currentCategory ? "rgba(201,168,76,0.6)" : "rgba(201,168,76,0.2)"}`,
+                    background: i < currentCategory ? "rgba(201,168,76,0.3)" : i === currentCategory ? "rgba(201,168,76,0.15)" : "transparent",
                     transition: "all 0.3s",
                   }}
                 />
@@ -669,16 +674,16 @@ export default function InsightEngine() {
                 style={{
                   background: "none",
                   border: "none",
-                  color: "rgba(212,165,116,0.25)",
+                  color: "#8a8070",
                   fontSize: 11,
-                  fontFamily: "'Cormorant Garamond', serif",
+                  fontFamily: "'Jost', sans-serif",
                   letterSpacing: 2,
                   cursor: "pointer",
                   textTransform: "uppercase",
                   transition: "color 0.3s",
                 }}
-                onMouseEnter={(e) => e.target.style.color = "rgba(212,165,116,0.5)"}
-                onMouseLeave={(e) => e.target.style.color = "rgba(212,165,116,0.25)"}
+                onMouseEnter={(e) => e.target.style.color = "#C9A84C"}
+                onMouseLeave={(e) => e.target.style.color = "#8a8070"}
               >
                 Start over
               </button>
@@ -704,13 +709,13 @@ export default function InsightEngine() {
                   style={{
                     padding: "6px 14px",
                     borderRadius: 20,
-                    border: "1px solid rgba(212,165,116,0.15)",
+                    border: "1px solid rgba(201,168,76,0.2)",
                     fontSize: 12,
-                    color: "rgba(212,165,116,0.6)",
+                    color: "#b8b0a0",
                     letterSpacing: 0.5,
                   }}
                 >
-                  {c.label}: <strong style={{ color: "#D4A574" }}>{scores[c.id]}</strong>
+                  {c.label}: <strong style={{ color: "#E8C97A" }}>{scores[c.id]}</strong>
                 </div>
               ))}
             </div>
@@ -728,7 +733,7 @@ export default function InsightEngine() {
                     fontSize: 11,
                     letterSpacing: 4,
                     textTransform: "uppercase",
-                    color: "rgba(212,165,116,0.4)",
+                    color: "#C9A84C",
                     marginBottom: 20,
                   }}
                 >
@@ -737,9 +742,9 @@ export default function InsightEngine() {
                 <div
                   style={{
                     fontSize: 16,
-                    lineHeight: 1.8,
-                    color: "rgba(235,225,210,0.75)",
-                    fontWeight: 300,
+                    lineHeight: 1.85,
+                    color: "#EDE8DC",
+                    fontWeight: 400,
                   }}
                 >
                   {renderMarkdown(insightText)}
@@ -759,10 +764,10 @@ export default function InsightEngine() {
                   transition: "opacity 0.8s ease",
                 }}
               >
-                <div style={{ fontSize: 22, color: "#EBE1D2", marginBottom: 8, fontWeight: 300 }}>
+                <div style={{ fontSize: 22, color: "#EDE8DC", marginBottom: 8, fontWeight: 300, fontFamily: "'Cormorant Garamond', serif" }}>
                   Does this resonate with you?
                 </div>
-                <p style={{ fontSize: 14, color: "rgba(235,225,210,0.5)", marginBottom: 24, fontWeight: 300 }}>
+                <p style={{ fontSize: 14, color: "#b8b0a0", marginBottom: 24, fontWeight: 400 }}>
                   If you'd like to explore what came up, we're here. Share your email and we'll connect you
                   with the right support — whether that's coaching, therapeutic guidance, or both.
                 </p>
@@ -776,10 +781,10 @@ export default function InsightEngine() {
                       flex: 1,
                       padding: "12px 16px",
                       background: "rgba(13,13,18,0.8)",
-                      border: "1px solid rgba(212,165,116,0.2)",
-                      color: "#EBE1D2",
+                      border: "1px solid rgba(201,168,76,0.35)",
+                      color: "#EDE8DC",
                       fontSize: 14,
-                      fontFamily: "'Cormorant Garamond', serif",
+                      fontFamily: "'Jost', sans-serif",
                       outline: "none",
                     }}
                   />
@@ -788,7 +793,7 @@ export default function InsightEngine() {
                       ...styles.nextBtn,
                       padding: "12px 24px",
                       ...(hoveredBtn === "submit"
-                        ? { background: "rgba(212,165,116,0.08)", borderColor: "#D4A574" }
+                        ? { background: "rgba(201,168,76,0.08)", borderColor: "#C9A84C" }
                         : {}),
                     }}
                     onMouseEnter={() => setHoveredBtn("submit")}
@@ -800,7 +805,7 @@ export default function InsightEngine() {
                     Connect
                   </button>
                 </div>
-                <p style={{ fontSize: 11, color: "rgba(212,165,116,0.25)", marginTop: 16, letterSpacing: 0.5 }}>
+                <p style={{ fontSize: 11, color: "#8a8070", marginTop: 16, letterSpacing: 0.5 }}>
                   Your assessment will be linked to your email so we can prepare for your consultation.
                 </p>
               </div>
@@ -816,10 +821,10 @@ export default function InsightEngine() {
                   textAlign: "center",
                 }}
               >
-                <div style={{ fontSize: 28, color: "#D4A574", marginBottom: 8, fontWeight: 300 }}>
+                <div style={{ fontSize: 28, color: "#E8C97A", marginBottom: 8, fontWeight: 300, fontFamily: "'Cormorant Garamond', serif" }}>
                   Thank you
                 </div>
-                <p style={{ fontSize: 15, color: "rgba(235,225,210,0.6)", marginBottom: 24, fontWeight: 300 }}>
+                <p style={{ fontSize: 15, color: "#b8b0a0", marginBottom: 24, fontWeight: 400 }}>
                   We've received your assessment. A member of our team will reach out within 24 hours to schedule a complimentary consultation.
                 </p>
                 <button
@@ -835,7 +840,7 @@ export default function InsightEngine() {
                 >
                   Book Now
                 </button>
-                <p style={{ fontSize: 11, color: "rgba(212,165,116,0.25)", marginTop: 16, letterSpacing: 0.5 }}>
+                <p style={{ fontSize: 11, color: "#8a8070", marginTop: 16, letterSpacing: 0.5 }}>
                   Or schedule at your convenience
                 </p>
               </div>
@@ -847,16 +852,16 @@ export default function InsightEngine() {
                 style={{
                   background: "none",
                   border: "none",
-                  color: "rgba(212,165,116,0.3)",
+                  color: "#8a8070",
                   fontSize: 13,
-                  fontFamily: "'Cormorant Garamond', serif",
+                  fontFamily: "'Jost', sans-serif",
                   letterSpacing: 2,
                   cursor: "pointer",
                   textTransform: "uppercase",
                   transition: "color 0.3s",
                 }}
-                onMouseEnter={(e) => e.target.style.color = "rgba(212,165,116,0.6)"}
-                onMouseLeave={(e) => e.target.style.color = "rgba(212,165,116,0.3)"}
+                onMouseEnter={(e) => e.target.style.color = "#C9A84C"}
+                onMouseLeave={(e) => e.target.style.color = "#8a8070"}
               >
                 ← Retake Assessment
               </button>
