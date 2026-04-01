@@ -182,14 +182,14 @@ exports.handler = async (event) => {
     }
 
     await resend.emails.send({
-      from: "Helios Insight Engine <notifications@yourdomain.com>",
+      from: "Helios Insight Engine <no-reply@heliosintegrativehealth.com>",
       to: PRACTITIONER_EMAILS,
       subject: `New Life Diagnostic Opt-In: ${email}`,
       html: buildPractitionerEmail(email, scores, insights || ""),
     });
 
     await resend.emails.send({
-      from: "Helios <hello@yourdomain.com>",
+      from: "Helios <no-reply@heliosintegrativehealth.com>",
       to: [email],
       subject: "Your Life Diagnostic Results — Helios",
       html: buildUserConfirmationEmail(scores),
