@@ -11,10 +11,12 @@
   },
   "dependencies": {
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "resend": "^6.10.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@netlify/functions": "^5.1.5",
     "@tailwindcss/vite": "^4.2.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

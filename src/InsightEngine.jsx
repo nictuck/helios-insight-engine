@@ -213,6 +213,9 @@ export default function InsightEngine() {
   const [showCTA, setShowCTA] = useState(false);
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [consentChecked, setConsentChecked] = useState(false);
   const [fadeIn, setFadeIn] = useState(false);
 
   // Dev shortcut: add ?preview to URL to skip straight to results
@@ -257,6 +260,40 @@ export default function InsightEngine() {
     setShowCTA(false);
     setEmail("");
     setSubmitted(false);
+    setConsentChecked(false);
+    setSubmitting(false);
+    setSubmitError("");
+  };
+
+  const handleOptIn = async () => {
+    if (!email.includes("@") || !email.includes(".") || !consentChecked) return;
+
+    setSubmitting(true);
+    setSubmitError("");
+
+    try {
+      const response = await fetch("/.netlify/functions/submit-assessment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          scores,
+          insights: insightText,
+          honeypot: document.getElementById("hp-field")?.value || "",
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Something went wrong");
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      setSubmitError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const totalQuestions = CATEGORIES.reduce((sum, c) => sum + QUESTIONS[c.id].length, 0);
@@ -693,6 +730,20 @@ export default function InsightEngine() {
                   If you'd like to explore what came up, we're here. Share your email and we'll connect you
                   with the right support — whether that's coaching, therapeutic guidance, or both.
                 </p>
+                <input
+                  id="hp-field"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  style={{
+                    position: "absolute",
+                    left: "-9999px",
+                    opacity: 0,
+                    height: 0,
+                    width: 0,
+                    overflow: "hidden",
+                  }}
+                />
                 <div style={{ display: "flex", gap: 12, maxWidth: 400, margin: "0 auto" }}>
                   <input
                     type="email"
@@ -714,22 +765,50 @@ export default function InsightEngine() {
                     style={{
                       ...styles.nextBtn,
                       padding: "12px 24px",
+                      opacity: (!consentChecked || submitting) ? 0.4 : 1,
+                      pointerEvents: (!consentChecked || submitting) ? "none" : "auto",
                       ...(hoveredBtn === "submit"
                         ? { background: "rgba(201,168,76,0.08)", borderColor: "#C9A84C" }
                         : {}),
                     }}
                     onMouseEnter={() => setHoveredBtn("submit")}
                     onMouseLeave={() => setHoveredBtn(null)}
-                    onClick={() => {
-                      if (email.includes("@")) setSubmitted(true);
-                    }}
+                    onClick={handleOptIn}
                   >
-                    Connect
+                    {submitting ? "Sending..." : "Connect"}
                   </button>
                 </div>
-                <p style={{ fontSize: 11, color: "#8a8070", marginTop: 16, letterSpacing: 0.5 }}>
-                  Your assessment will be linked to your email so we can prepare for your consultation.
-                </p>
+                <label style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 8,
+                  marginTop: 12,
+                  cursor: "pointer",
+                  fontSize: 12,
+                  color: "rgba(212,165,116,0.4)",
+                  lineHeight: 1.5,
+                  maxWidth: 400,
+                  margin: "12px auto 0",
+                  textAlign: "left",
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={consentChecked}
+                    onChange={(e) => setConsentChecked(e.target.checked)}
+                    style={{ marginTop: 2, accentColor: "#D4A574" }}
+                  />
+                  I consent to sharing my email and assessment results with the Helios team for the purpose of scheduling a consultation.
+                </label>
+                {submitError && (
+                  <p style={{
+                    fontSize: 13,
+                    color: "#E24B4A",
+                    textAlign: "center",
+                    marginTop: 12,
+                  }}>
+                    {submitError}
+                  </p>
+                )}
               </div>
             )}
 
