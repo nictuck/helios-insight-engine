@@ -762,6 +762,9 @@ export default function InsightEngine() {
                 <div style={{ display: "flex", gap: 12, maxWidth: 400, margin: "0 auto" }}>
                   <input
                     type="email"
+                    name="email"
+                    id="email"
+                    autoComplete="email"
                     placeholder="your@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
