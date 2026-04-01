@@ -127,32 +127,38 @@ export default function AuraDaisy({ scores, animate }) {
           700 + cat.i * 173, time
         );
         const [cr, cg, cb] = cat.color;
-
-        // Outer gradient fill
         const gx = ocx + Math.cos(angle) * length * 0.15;
         const gy = ocy + Math.sin(angle) * length * 0.15;
-        const grad = ctx.createRadialGradient(gx, gy, length * 0.05, gx, gy, length * 0.65);
-        const alph = 0.28;
-        grad.addColorStop(0, `rgba(${cr},${cg},${cb},${alph * 1.8})`);
-        grad.addColorStop(0.4, `rgba(${cr},${cg},${cb},${alph * 1.1})`);
-        grad.addColorStop(0.75, `rgba(${cr},${cg},${cb},${alph * 0.5})`);
-        grad.addColorStop(1, `rgba(${cr},${cg},${cb},${alph * 0.08})`);
+        const pulse = 0.5 + 0.5 * Math.sin(time * 1.6 + cat.i * 0.9);
+
+        // Outer petal shape — blurred to soften edges, gradient fades toward boundary
+        const alph = 0.24 + pulse * 0.08;
+        const grad = ctx.createRadialGradient(gx, gy, length * 0.03, gx, gy, length * 0.6);
+        grad.addColorStop(0, `rgba(${cr},${cg},${cb},${alph * 1.6})`);
+        grad.addColorStop(0.35, `rgba(${cr},${cg},${cb},${alph * 1.0})`);
+        grad.addColorStop(0.65, `rgba(${cr},${cg},${cb},${alph * 0.4})`);
+        grad.addColorStop(0.9, `rgba(${cr},${cg},${cb},${alph * 0.08})`);
+        grad.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
 
         ctx.save();
+        ctx.filter = "blur(8px)";
         drawSmooth(pts);
         ctx.fillStyle = grad;
         ctx.fill();
         ctx.restore();
 
-        // Inner glow
+        // Inner core — slightly brighter, less blur, gives the petal a warm center
         const innerPts = oblongPoints(
-          ocx, ocy, angle + sway, length * 0.5, width * 0.5,
+          ocx, ocy, angle + sway, length * 0.45, width * 0.45,
           1200 + cat.i * 211, time
         );
-        const ig = ctx.createRadialGradient(gx, gy, 0, gx, gy, length * 0.3);
-        ig.addColorStop(0, `rgba(${cr},${cg},${cb},${alph * 1.0})`);
+        const igA = (0.18 + pulse * 0.10) * progress;
+        const ig = ctx.createRadialGradient(gx, gy, 0, gx, gy, length * 0.25);
+        ig.addColorStop(0, `rgba(${cr},${cg},${cb},${igA})`);
+        ig.addColorStop(0.5, `rgba(${cr},${cg},${cb},${igA * 0.4})`);
         ig.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
         ctx.save();
+        ctx.filter = "blur(4px)";
         drawSmooth(innerPts);
         ctx.fillStyle = ig;
         ctx.fill();
