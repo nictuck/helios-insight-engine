@@ -811,6 +811,8 @@ export default function InsightEngine() {
                 }}>
                   <input
                     type="checkbox"
+                    id="consent"
+                    name="consent"
                     checked={consentChecked}
                     onChange={(e) => setConsentChecked(e.target.checked)}
                     style={{ marginTop: 2, accentColor: "#D4A574" }}
