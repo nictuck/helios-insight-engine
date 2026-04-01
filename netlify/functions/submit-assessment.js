@@ -105,7 +105,7 @@ function buildPractitionerEmail(email, scores, insights) {
   `;
 }
 
-function buildUserConfirmationEmail(scores) {
+function buildUserConfirmationEmail(scores, insights) {
   const scoreRows = Object.entries(scores)
     .map(([key, val]) => {
       const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, " ");
@@ -114,9 +114,14 @@ function buildUserConfirmationEmail(scores) {
         <tr>
           <td style="padding:8px 12px;border-bottom:1px solid #1a1a24;color:#EBE1D2;font-size:14px;">${label}</td>
           <td style="padding:8px 12px;border-bottom:1px solid #1a1a24;color:${color};font-weight:600;font-size:14px;text-align:center;">${val}/10</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #1a1a24;color:#888;font-size:12px;">${scoreLabel(val)}</td>
         </tr>`;
     })
     .join("");
+
+  const sorted = Object.entries(scores).sort((a, b) => a[1] - b[1]);
+  const lowest = sorted.slice(0, 2).map(([k, v]) => `${k} (${v})`).join(", ");
+  const highest = sorted.slice(-2).map(([k, v]) => `${k} (${v})`).join(", ");
 
   return `
     <div style="background:#0D0D12;padding:32px;font-family:Georgia,serif;max-width:600px;">
@@ -124,12 +129,24 @@ function buildUserConfirmationEmail(scores) {
         <span style="color:rgba(212,165,116,0.5);font-size:12px;letter-spacing:4px;text-transform:uppercase;">Helios</span>
       </div>
       <h1 style="color:#D4A574;font-size:24px;font-weight:300;margin:0 0 8px;text-align:center;">Your Life Diagnostic</h1>
-      <p style="color:rgba(235,225,210,0.6);font-size:15px;text-align:center;margin:0 0 32px;">Thank you for taking the time to look inward. Here's a summary of your results.</p>
+      <p style="color:rgba(235,225,210,0.6);font-size:15px;text-align:center;margin:0 0 32px;">Thank you for taking the time to look inward. Here are your full results.</p>
 
       <div style="background:#13131a;border:1px solid #1a1a24;border-radius:8px;padding:16px;margin-bottom:24px;">
+        <p style="color:rgba(212,165,116,0.6);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:0 0 12px;">Life Diagnostic Scores</p>
         <table style="width:100%;border-collapse:collapse;">
           ${scoreRows}
         </table>
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid #1a1a24;">
+          <p style="color:#E24B4A;font-size:13px;margin:0 0 4px;">⬇ Lowest: ${lowest}</p>
+          <p style="color:#1D9E75;font-size:13px;margin:0;">⬆ Highest: ${highest}</p>
+        </div>
+      </div>
+
+      <div style="background:#13131a;border:1px solid #1a1a24;border-radius:8px;padding:16px;margin-bottom:24px;">
+        <p style="color:rgba(212,165,116,0.6);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:0 0 12px;">Your Insights</p>
+        <div style="color:#EBE1D2;font-size:14px;line-height:1.7;opacity:0.8;">
+          ${insights.replace(/\n/g, "<br>")}
+        </div>
       </div>
 
       <p style="color:rgba(235,225,210,0.6);font-size:14px;line-height:1.7;text-align:center;margin:0 0 32px;">
@@ -192,7 +209,7 @@ export const handler = async (event) => {
       from: "Helios <no-reply@heliosintegrativehealth.com>",
       to: [email],
       subject: "Your Life Diagnostic Results — Helios",
-      html: buildUserConfirmationEmail(scores),
+      html: buildUserConfirmationEmail(scores, insights || ""),
     });
 
     return {
