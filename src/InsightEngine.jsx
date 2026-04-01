@@ -215,6 +215,26 @@ export default function InsightEngine() {
   const [submitted, setSubmitted] = useState(false);
   const [fadeIn, setFadeIn] = useState(false);
 
+  // Dev shortcut: add ?preview to URL to skip straight to results
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has("preview")) {
+      const previewScores = {
+        career: 5, relationships: 7, health: 3, finance: 8,
+        growth: 6, joy: 9, family: 4, environment: 7,
+      };
+      setScores(previewScores);
+      setScreen("results");
+      setTimeout(() => setShowChart(true), 400);
+      setTimeout(() => {
+        setShowInsights(true);
+        const fullText = MOCK_INSIGHTS(previewScores);
+        setInsightText(fullText);
+        setInsightIndex(fullText.length);
+        setShowCTA(true);
+      }, 800);
+    }
+  }, []);
+
   useEffect(() => {
     const timer = setTimeout(() => setFadeIn(true), 50);
     return () => clearTimeout(timer);
