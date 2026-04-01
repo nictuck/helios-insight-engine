@@ -239,10 +239,11 @@ export default function InsightEngine() {
     setSubmitted(false);
   };
 
-  const cat = CATEGORIES[currentCategory];
-  const questions = cat ? QUESTIONS[cat.id] : [];
   const totalQuestions = CATEGORIES.reduce((sum, c) => sum + QUESTIONS[c.id].length, 0);
   const answeredCount = Object.keys(answers).length;
+
+  const cat = CATEGORIES[currentCategory];
+  const questions = cat ? QUESTIONS[cat.id] : [];
 
   const getAnswerKey = (catIdx, qIdx) => `${CATEGORIES[catIdx].id}_${qIdx}`;
 
@@ -520,7 +521,7 @@ export default function InsightEngine() {
             </div>
 
             <div style={styles.categoryLabel}>
-              {cat.icon} &nbsp;{cat.label} — Question {currentQuestion + 1} of {questions.length}
+              {cat.icon} &nbsp;{cat.label}
             </div>
 
             <div style={styles.questionText}>{questions[currentQuestion]}</div>
@@ -537,9 +538,7 @@ export default function InsightEngine() {
               >
                 ← Back
               </button>
-              <span style={{ fontSize: 12, color: "#8a8070", letterSpacing: 1 }}>
-                {answeredCount} of {totalQuestions}
-              </span>
+              <span />
               <button
                 style={{
                   ...styles.nextBtn,
@@ -557,21 +556,6 @@ export default function InsightEngine() {
               </button>
             </div>
 
-            <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 40 }}>
-              {CATEGORIES.map((c, i) => (
-                <div
-                  key={c.id}
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    border: `1px solid ${i === currentCategory ? "rgba(201,168,76,0.6)" : "rgba(201,168,76,0.2)"}`,
-                    background: i < currentCategory ? "rgba(201,168,76,0.3)" : i === currentCategory ? "rgba(201,168,76,0.15)" : "transparent",
-                    transition: "all 0.3s",
-                  }}
-                />
-              ))}
-            </div>
             <div style={{ textAlign: "center", marginTop: 24 }}>
               <button
                 onClick={resetAssessment}
