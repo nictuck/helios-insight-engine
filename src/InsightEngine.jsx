@@ -266,30 +266,42 @@ export default function InsightEngine() {
   };
 
   const handleOptIn = async () => {
-    if (!email.includes("@") || !email.includes(".") || !consentChecked) return;
+    console.log("[OptIn] clicked", { email, consentChecked, scores });
+
+    if (!email.includes("@") || !email.includes(".") || !consentChecked) {
+      console.log("[OptIn] validation failed", { email, consentChecked });
+      return;
+    }
 
     setSubmitting(true);
     setSubmitError("");
+
+    const payload = {
+      email,
+      scores,
+      insights: insightText,
+      honeypot: document.getElementById("hp-field")?.value || "",
+    };
+    console.log("[OptIn] sending payload", payload);
 
     try {
       const response = await fetch("/.netlify/functions/submit-assessment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          scores,
-          insights: insightText,
-          honeypot: document.getElementById("hp-field")?.value || "",
-        }),
+        body: JSON.stringify(payload),
       });
 
+      console.log("[OptIn] response", { status: response.status, ok: response.ok });
+      const data = await response.json();
+      console.log("[OptIn] response body", data);
+
       if (!response.ok) {
-        const data = await response.json();
         throw new Error(data.error || "Something went wrong");
       }
 
       setSubmitted(true);
     } catch (err) {
+      console.error("[OptIn] error", err);
       setSubmitError(err.message || "Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
