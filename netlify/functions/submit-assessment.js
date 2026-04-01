@@ -160,25 +160,20 @@ export const handler = async (event) => {
   try {
     const body = JSON.parse(event.body);
     const { email, scores, insights, honeypot } = body;
-    console.log("[Function] received:", { email, scoreKeys: Object.keys(scores || {}), hasHoneypot: !!honeypot });
 
     if (honeypot) {
-      console.log("[Function] honeypot triggered, silent return");
       return { statusCode: 200, body: JSON.stringify({ success: true }) };
     }
 
     if (!email || !email.includes("@") || !email.includes(".")) {
-      console.log("[Function] invalid email:", email);
       return { statusCode: 400, body: JSON.stringify({ error: "Invalid email" }) };
     }
 
     if (!scores || typeof scores !== "object") {
-      console.log("[Function] invalid scores:", scores);
       return { statusCode: 400, body: JSON.stringify({ error: "Invalid scores" }) };
     }
 
     const ip = event.headers["x-forwarded-for"] || event.headers["client-ip"] || "unknown";
-    console.log("[Function] IP:", ip, "rate limited:", isRateLimited(ip));
     if (isRateLimited(ip)) {
       return {
         statusCode: 429,
@@ -186,30 +181,26 @@ export const handler = async (event) => {
       };
     }
 
-    console.log("[Function] sending practitioner email to:", PRACTITIONER_EMAILS);
-    const practResult = await resend.emails.send({
+    await resend.emails.send({
       from: "Helios Insight Engine <no-reply@heliosintegrativehealth.com>",
       to: PRACTITIONER_EMAILS,
       subject: `New Life Diagnostic Opt-In: ${email}`,
       html: buildPractitionerEmail(email, scores, insights || ""),
     });
-    console.log("[Function] practitioner email result:", JSON.stringify(practResult));
 
-    console.log("[Function] sending user email to:", email);
-    const userResult = await resend.emails.send({
+    await resend.emails.send({
       from: "Helios <no-reply@heliosintegrativehealth.com>",
       to: [email],
       subject: "Your Life Diagnostic Results — Helios",
       html: buildUserConfirmationEmail(scores),
     });
-    console.log("[Function] user email result:", JSON.stringify(userResult));
 
     return {
       statusCode: 200,
       body: JSON.stringify({ success: true }),
     };
   } catch (error) {
-    console.error("[Function] error:", error.message, error.stack);
+    console.error("Submit error:", error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: "Something went wrong. Please try again." }),
