@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import AuraDaisy from "./AuraDaisy";
 
 const CATEGORIES = [
   { id: "career", label: "Career & Purpose", icon: "◈", color: "#D4A574" },
@@ -69,103 +70,6 @@ When ${lowest[0]?.label.toLowerCase()} scores are lower while areas like ${highe
 
 *At Helios, we work with the whole person — not just the symptom. Whether through integrative coaching, systems work, or therapeutic support, we help you find the leverage points that matter most.*`;
 };
-
-function RadarChart({ scores, animate }) {
-  const size = 340;
-  const center = size / 2;
-  const maxRadius = 130;
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    if (!animate) return;
-    let start = null;
-    const duration = 1200;
-    const step = (ts) => {
-      if (!start) start = ts;
-      const p = Math.min((ts - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - p, 3);
-      setProgress(eased);
-      if (p < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, [animate]);
-
-  const getPoint = (index, value, scale = 1) => {
-    const angle = (Math.PI * 2 * index) / 8 - Math.PI / 2;
-    const r = (value / 10) * maxRadius * scale;
-    return { x: center + r * Math.cos(angle), y: center + r * Math.sin(angle) };
-  };
-
-  const gridLines = [2, 4, 6, 8, 10];
-  const dataPoints = CATEGORIES.map((cat, i) => getPoint(i, scores[cat.id] || 0, progress));
-  const dataPath = dataPoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ") + " Z";
-
-  return (
-    <svg viewBox={`0 0 ${size} ${size}`} style={{ width: "100%", maxWidth: 400 }}>
-      <defs>
-        <radialGradient id="chartGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#D4A574" stopOpacity="0.15" />
-          <stop offset="100%" stopColor="#D4A574" stopOpacity="0" />
-        </radialGradient>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="3" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-
-      <circle cx={center} cy={center} r={maxRadius + 10} fill="url(#chartGlow)" />
-
-      {gridLines.map((v) => {
-        const pts = Array.from({ length: 8 }, (_, i) => getPoint(i, v));
-        const path = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ") + " Z";
-        return <path key={v} d={path} fill="none" stroke="rgba(212,165,116,0.12)" strokeWidth="1" />;
-      })}
-
-      {CATEGORIES.map((_, i) => {
-        const p = getPoint(i, 10);
-        return <line key={i} x1={center} y1={center} x2={p.x} y2={p.y} stroke="rgba(212,165,116,0.08)" strokeWidth="1" />;
-      })}
-
-      {progress > 0 && (
-        <>
-          <path d={dataPath} fill="rgba(212,165,116,0.12)" stroke="none" />
-          <path d={dataPath} fill="none" stroke="#D4A574" strokeWidth="2" filter="url(#glow)" strokeLinejoin="round" />
-          {dataPoints.map((p, i) => (
-            <g key={i}>
-              <circle cx={p.x} cy={p.y} r="5" fill="#0D0D12" stroke="#D4A574" strokeWidth="1.5" />
-              <circle cx={p.x} cy={p.y} r="2" fill="#D4A574" />
-            </g>
-          ))}
-        </>
-      )}
-
-      {CATEGORIES.map((cat, i) => {
-        const labelDist = maxRadius + 28;
-        const angle = (Math.PI * 2 * i) / 8 - Math.PI / 2;
-        const lx = center + labelDist * Math.cos(angle);
-        const ly = center + labelDist * Math.sin(angle);
-        return (
-          <text
-            key={cat.id}
-            x={lx}
-            y={ly}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fill="#b8b0a0"
-            fontSize="9"
-            fontFamily="'Jost', sans-serif"
-            letterSpacing="0.5"
-          >
-            {cat.label}
-          </text>
-        );
-      })}
-    </svg>
-  );
-}
 
 function SliderInput({ value, onChange }) {
   const trackRef = useRef(null);
@@ -695,29 +599,43 @@ export default function InsightEngine() {
           <div style={{ opacity: fadeIn ? 1 : 0, transition: "opacity 0.6s ease", transitionDelay: "0.1s" }}>
             <h1 style={{ ...styles.h1, fontSize: 34, marginBottom: 8 }}>Your Life Diagnostic</h1>
             <p style={{ ...styles.subtitle, fontSize: 15, marginBottom: 32 }}>
-              Here's a snapshot of where your energy is flowing — and where it's asking for attention.
+              Each shape represents a dimension of your life. Larger blooms are thriving. Smaller ones are asking for attention. The brighter the center, the more balanced your life feels.
             </p>
 
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 32 }}>
-              <RadarChart scores={scores} animate={showChart} />
+              <AuraDaisy scores={scores} animate={showChart} />
             </div>
 
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginBottom: 40 }}>
-              {CATEGORIES.map((c) => (
-                <div
-                  key={c.id}
-                  style={{
-                    padding: "6px 14px",
-                    borderRadius: 20,
-                    border: "1px solid rgba(201,168,76,0.2)",
-                    fontSize: 12,
-                    color: "#b8b0a0",
-                    letterSpacing: 0.5,
-                  }}
-                >
-                  {c.label}: <strong style={{ color: "#E8C97A" }}>{scores[c.id]}</strong>
-                </div>
-              ))}
+              {CATEGORIES.map((c) => {
+                const petalColors = {
+                  career: [220, 155, 50],
+                  relationships: [65, 135, 215],
+                  health: [50, 185, 110],
+                  finance: [195, 165, 55],
+                  growth: [150, 85, 210],
+                  joy: [215, 65, 115],
+                  family: [40, 190, 185],
+                  environment: [130, 190, 50],
+                };
+                const [r, g, b] = petalColors[c.id] || [212, 165, 116];
+                return (
+                  <div
+                    key={c.id}
+                    style={{
+                      padding: "6px 14px",
+                      borderRadius: 20,
+                      border: `1px solid rgba(${r},${g},${b},0.25)`,
+                      background: `rgba(${r},${g},${b},0.08)`,
+                      fontSize: 12,
+                      color: `rgb(${r},${g},${b})`,
+                      letterSpacing: 0.5,
+                    }}
+                  >
+                    {c.label}: <strong style={{ color: `rgb(${r},${g},${b})` }}>{scores[c.id]}</strong>
+                  </div>
+                );
+              })}
             </div>
 
             {showInsights && (
