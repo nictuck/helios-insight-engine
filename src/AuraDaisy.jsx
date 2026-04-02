@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import silhouetteSrc from "./assets/meditation-silhouette-clean.png";
 
 const CATEGORIES = [
   { id: "career", label: "Career", color: [220, 155, 50] },
@@ -16,6 +17,14 @@ export default function AuraDaisy({ scores, animate }) {
   const animRef = useRef(null);
   const timeRef = useRef(0);
   const progressRef = useRef(0);
+  const silhouetteRef = useRef(null);
+
+  // Load silhouette image once
+  useEffect(() => {
+    const img = new Image();
+    img.src = silhouetteSrc;
+    img.onload = () => { silhouetteRef.current = img; };
+  }, []);
 
   useEffect(() => {
     if (!animate) return;
@@ -35,7 +44,7 @@ export default function AuraDaisy({ scores, animate }) {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    const W = 520, H = 520, CX = W / 2, CY = H / 2;
+    const W = 800, H = 800, CX = W / 2, CY = H / 2;
 
     function sRng(s) {
       return () => {
@@ -97,6 +106,59 @@ export default function AuraDaisy({ scores, animate }) {
       const variance =
         scoreArr.reduce((a, s) => a + Math.pow(s - avg, 2), 0) / CATEGORIES.length;
       const balance = Math.max(0, 1 - variance / 20);
+
+      // Draw silhouette behind petals
+      const sImg = silhouetteRef.current;
+      if (sImg) {
+        const pulse = 0.5 + 0.5 * Math.sin(time * 0.8);
+        const baseA = 0.15 + pulse * 0.02;
+        const r = 212, g = 165, b = 116;
+
+        // Size the silhouette to fill most of the canvas
+        const imgAspect = sImg.width / sImg.height;
+        const drawH = H * 0.88;
+        const drawW = drawH * imgAspect;
+        const dx = CX - drawW / 2;
+        const dy = CY - drawH * 0.42;
+
+        // Offscreen canvas: draw silhouette then tint with gradient
+        const mask = document.createElement("canvas");
+        mask.width = W;
+        mask.height = H;
+        const mc = mask.getContext("2d");
+        mc.drawImage(sImg, dx, dy, drawW, drawH);
+
+        // source-in: gradient only shows where silhouette is opaque
+        mc.globalCompositeOperation = "source-in";
+        const grad = mc.createRadialGradient(CX, CY, 0, CX, CY, drawH * 0.55);
+        grad.addColorStop(0, `rgba(${r},${g},${b},${baseA * 2.0})`);
+        grad.addColorStop(0.3, `rgba(${r},${g},${b},${baseA * 1.5})`);
+        grad.addColorStop(0.6, `rgba(${r},${g},${b},${baseA * 0.9})`);
+        grad.addColorStop(1, `rgba(${r},${g},${b},${baseA * 0.3})`);
+        mc.fillStyle = grad;
+        mc.fillRect(0, 0, W, H);
+
+        // Soft halo behind head
+        ctx.save();
+        ctx.filter = "blur(18px)";
+        const headY = dy + drawH * 0.08;
+        const haloG = ctx.createRadialGradient(CX, headY, 0, CX, headY, drawH * 0.18);
+        haloG.addColorStop(0, `rgba(${r},${g},${b},${baseA * 0.4})`);
+        haloG.addColorStop(0.6, `rgba(${r},${g},${b},${baseA * 0.12})`);
+        haloG.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        ctx.fillStyle = haloG;
+        ctx.beginPath();
+        ctx.arc(CX, headY, drawH * 0.18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // Composite with slight blur
+        ctx.save();
+        ctx.filter = "blur(2px)";
+        ctx.globalAlpha = progress;
+        ctx.drawImage(mask, 0, 0);
+        ctx.restore();
+      }
 
       const minL = 60, maxL = 220, minW = 42, maxW = 95;
       const total = CATEGORIES.length;
@@ -229,9 +291,9 @@ export default function AuraDaisy({ scores, animate }) {
   return (
     <canvas
       ref={canvasRef}
-      width={520}
-      height={520}
-      style={{ width: "min(100%, max(320px, 80vw))", maxWidth: 600 }}
+      width={800}
+      height={800}
+      style={{ width: "min(100%, max(320px, 80vw))", maxWidth: 800 }}
     />
   );
 }
