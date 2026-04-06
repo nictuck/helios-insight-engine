@@ -40,7 +40,7 @@ function scoreLabel(score) {
   return "Thriving";
 }
 
-function buildPractitionerEmail(email, scores, insights) {
+function buildPractitionerEmail(email, scores, insights, optionalResponses) {
   const scoreRows = Object.entries(scores)
     .map(([key, val]) => {
       const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, " ");
@@ -72,6 +72,20 @@ function buildPractitionerEmail(email, scores, insights) {
           <a href="mailto:${email}" style="color:#D4A574;text-decoration:none;">${email}</a>
         </p>
       </div>
+
+      ${(optionalResponses?.intention?.trim() || optionalResponses?.context?.trim()) ? `
+      <div style="background:#13131a;border:1px solid #1a1a24;border-radius:8px;padding:16px;margin-bottom:24px;">
+        <p style="color:rgba(212,165,116,0.6);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:0 0 12px;">In Their Own Words</p>
+        ${optionalResponses.intention?.trim() ? `
+        <p style="color:rgba(235,225,210,0.5);font-size:12px;margin:0 0 4px;font-style:italic;">What brought them here:</p>
+        <p style="color:#EBE1D2;font-size:14px;line-height:1.6;margin:0 0 12px;">&ldquo;${optionalResponses.intention.trim()}&rdquo;</p>
+        ` : ""}
+        ${optionalResponses.context?.trim() ? `
+        <p style="color:rgba(235,225,210,0.5);font-size:12px;margin:0 0 4px;font-style:italic;">What they want captured:</p>
+        <p style="color:#EBE1D2;font-size:14px;line-height:1.6;margin:0;">&ldquo;${optionalResponses.context.trim()}&rdquo;</p>
+        ` : ""}
+      </div>
+      ` : ""}
 
       <div style="background:#13131a;border:1px solid #1a1a24;border-radius:8px;padding:16px;margin-bottom:24px;">
         <p style="color:rgba(212,165,116,0.6);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:0 0 12px;">Life Diagnostic Scores</p>
@@ -176,7 +190,7 @@ export const handler = async (event) => {
 
   try {
     const body = JSON.parse(event.body);
-    const { email, scores, insights, honeypot } = body;
+    const { email, scores, insights, optionalResponses, honeypot } = body;
 
     if (honeypot) {
       return { statusCode: 200, body: JSON.stringify({ success: true }) };
@@ -202,7 +216,7 @@ export const handler = async (event) => {
       from: "Helios Insight Engine <no-reply@heliosintegrativehealth.com>",
       to: PRACTITIONER_EMAILS,
       subject: `New Life Diagnostic Opt-In: ${email}`,
-      html: buildPractitionerEmail(email, scores, insights || ""),
+      html: buildPractitionerEmail(email, scores, insights || "", optionalResponses || {}),
     });
 
     await resend.emails.send({

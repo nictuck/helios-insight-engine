@@ -345,6 +345,7 @@ export default function InsightEngine() {
           email,
           scores,
           insights: insightText,
+          optionalResponses,
           honeypot: document.getElementById("hp-field")?.value || "",
         }),
       });
