@@ -218,13 +218,21 @@ export default function InsightEngine() {
   const [consentChecked, setConsentChecked] = useState(false);
   const [fadeIn, setFadeIn] = useState(false);
   const [insightLoading, setInsightLoading] = useState(false);
+  const [questionMetrics, setQuestionMetrics] = useState({});
+  const [assessmentStart, setAssessmentStart] = useState(null);
+  const [optionalResponses, setOptionalResponses] = useState({ intention: "", context: "" });
 
-  const generateInsights = async (computed) => {
+  const generateInsights = async (computed, behavioral, totalDurationSeconds, optional) => {
     try {
       const response = await fetch("/.netlify/functions/generate-insights", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scores: computed }),
+        body: JSON.stringify({
+          scores: computed,
+          behavioral: behavioral || {},
+          totalDurationSeconds: totalDurationSeconds || null,
+          optionalResponses: optional || { intention: "", context: "" },
+        }),
       });
       if (!response.ok) throw new Error("API error");
       const data = await response.json();
@@ -261,7 +269,7 @@ export default function InsightEngine() {
       setTimeout(() => setShowChart(true), 400);
       setShowInsights(true);
       setInsightLoading(true);
-      generateInsights(previewScores).then((fullText) => {
+      generateInsights(previewScores, {}, null, { intention: "", context: "" }).then((fullText) => {
         setInsightLoading(false);
         setInsightText(fullText);
         setInsightIndex(fullText.length);
@@ -279,6 +287,29 @@ export default function InsightEngine() {
     setFadeIn(false);
   }, [screen]);
 
+  // Track start time for each category
+  useEffect(() => {
+    if (screen !== "assessment") return;
+    const catId = CATEGORIES[currentCategory]?.id;
+    if (!catId) return;
+    setQuestionMetrics((prev) => {
+      // Don't reset startTime on revisit — we only reset it when computing elapsed
+      if (prev[catId]?.startTime && !prev[catId]?.endTime) return prev;
+      return {
+        ...prev,
+        [catId]: {
+          ...prev[catId],
+          startTime: Date.now(),
+          endTime: null,
+          sliderChanges: prev[catId]?.sliderChanges || 0,
+          revisited: prev[catId]?.revisited || false,
+          originalScore: prev[catId]?.originalScore ?? null,
+          scoreChanged: prev[catId]?.scoreChanged || false,
+        },
+      };
+    });
+  }, [currentCategory, screen]);
+
   const resetAssessment = () => {
     setScreen("landing");
     setCurrentCategory(0);
@@ -295,6 +326,9 @@ export default function InsightEngine() {
     setConsentChecked(false);
     setSubmitting(false);
     setSubmitError("");
+    setQuestionMetrics({});
+    setAssessmentStart(null);
+    setOptionalResponses({ intention: "", context: "" });
   };
 
   const handleOptIn = async () => {
@@ -338,18 +372,66 @@ export default function InsightEngine() {
 
   const handleAnswer = (val) => {
     const key = getAnswerKey(currentCategory, currentQuestion);
+    const catId = CATEGORIES[currentCategory].id;
+    if (val !== answers[key]) {
+      setQuestionMetrics((prev) => ({
+        ...prev,
+        [catId]: {
+          ...prev[catId],
+          sliderChanges: (prev[catId]?.sliderChanges || 0) + 1,
+        },
+      }));
+    }
     setAnswers((prev) => ({ ...prev, [key]: val }));
   };
 
   const currentValue = answers[getAnswerKey(currentCategory, currentQuestion)] || 5;
 
+  const finalizeCategoryMetrics = (catId) => {
+    const qs = QUESTIONS[catId];
+    const vals = qs.map((_, qi) => answers[`${catId}_${qi}`] || 5);
+    const avg = Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10;
+    setQuestionMetrics((prev) => {
+      const start = prev[catId]?.startTime;
+      const elapsed = start ? Math.round((Date.now() - start) / 1000) : null;
+      const wasRevisited = prev[catId]?.revisited || false;
+      const orig = prev[catId]?.originalScore;
+      return {
+        ...prev,
+        [catId]: {
+          ...prev[catId],
+          endTime: Date.now(),
+          elapsedSeconds: elapsed,
+          finalScore: avg,
+          scoreChanged: wasRevisited && orig != null ? orig !== avg : false,
+        },
+      };
+    });
+  };
+
+  const goToResults = (responses) => {
+    const totalDuration = assessmentStart ? Math.round((Date.now() - assessmentStart) / 1000) : null;
+    setScreen("results");
+    setTimeout(() => setShowChart(true), 400);
+    setTimeout(() => {
+      setShowInsights(true);
+      setInsightLoading(true);
+      generateInsights(scores, questionMetrics, totalDuration, responses || optionalResponses).then((fullText) => {
+        setInsightLoading(false);
+        startTypewriter(fullText);
+      });
+    }, 2000);
+  };
+
   const goNext = () => {
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion((q) => q + 1);
     } else if (currentCategory < CATEGORIES.length - 1) {
+      finalizeCategoryMetrics(CATEGORIES[currentCategory].id);
       setCurrentCategory((c) => c + 1);
       setCurrentQuestion(0);
     } else {
+      finalizeCategoryMetrics(CATEGORIES[currentCategory].id);
       const computed = {};
       CATEGORIES.forEach((c) => {
         const qs = QUESTIONS[c.id];
@@ -357,16 +439,7 @@ export default function InsightEngine() {
         computed[c.id] = Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10;
       });
       setScores(computed);
-      setScreen("results");
-      setTimeout(() => setShowChart(true), 400);
-      setTimeout(() => {
-        setShowInsights(true);
-        setInsightLoading(true);
-        generateInsights(computed).then((fullText) => {
-          setInsightLoading(false);
-          startTypewriter(fullText);
-        });
-      }, 2000);
+      setScreen("optional");
     }
   };
 
@@ -374,8 +447,17 @@ export default function InsightEngine() {
     if (currentQuestion > 0) {
       setCurrentQuestion((q) => q - 1);
     } else if (currentCategory > 0) {
+      const prevCatId = CATEGORIES[currentCategory - 1].id;
+      setQuestionMetrics((prev) => ({
+        ...prev,
+        [prevCatId]: {
+          ...prev[prevCatId],
+          revisited: true,
+          originalScore: prev[prevCatId]?.originalScore ?? prev[prevCatId]?.finalScore ?? null,
+        },
+      }));
       setCurrentCategory((c) => c - 1);
-      setCurrentQuestion(QUESTIONS[CATEGORIES[currentCategory - 1].id].length - 1);
+      setCurrentQuestion(QUESTIONS[prevCatId].length - 1);
     }
   };
 
@@ -585,7 +667,7 @@ export default function InsightEngine() {
                 style={{ ...styles.btn, ...(hoveredBtn === "start" ? styles.btnHover : {}) }}
                 onMouseEnter={() => setHoveredBtn("start")}
                 onMouseLeave={() => setHoveredBtn(null)}
-                onClick={() => setScreen("assessment")}
+                onClick={() => { setAssessmentStart(Date.now()); setScreen("assessment"); }}
               >
                 Begin
               </button>
@@ -633,7 +715,7 @@ export default function InsightEngine() {
                 onClick={goNext}
               >
                 {currentCategory === CATEGORIES.length - 1 && currentQuestion === questions.length - 1
-                  ? "See Results →"
+                  ? "Continue →"
                   : "Next →"}
               </button>
             </div>
@@ -656,6 +738,121 @@ export default function InsightEngine() {
                 onMouseLeave={(e) => e.target.style.color = "#8a8070"}
               >
                 Start over
+              </button>
+            </div>
+          </div>
+        )}
+
+        {screen === "optional" && (
+          <div style={{ opacity: fadeIn ? 1 : 0, transition: "opacity 0.8s ease", transitionDelay: "0.1s" }}>
+            <h1 style={{ ...styles.h1, fontSize: 32, marginBottom: 8 }}>One more thing</h1>
+            <p style={{ ...styles.subtitle, fontSize: 15, marginBottom: 8 }}>
+              These are optional — skip if you'd rather dive straight into your results.
+            </p>
+            <p style={{ fontSize: 12, color: "#8a8070", textAlign: "center", marginBottom: 40, letterSpacing: 0.5 }}>
+              Your responses are used to personalize your summary and are not stored.
+            </p>
+
+            <div style={{ marginBottom: 32 }}>
+              <label style={{
+                display: "block",
+                fontSize: 20,
+                fontWeight: 300,
+                color: "#EDE8DC",
+                fontFamily: "'Cormorant Garamond', serif",
+                marginBottom: 12,
+              }}>
+                What brought you here today?
+              </label>
+              <textarea
+                value={optionalResponses.intention}
+                onChange={(e) => setOptionalResponses((prev) => ({ ...prev, intention: e.target.value.slice(0, 300) }))}
+                placeholder="A transition, a feeling, curiosity — whatever it is"
+                rows={3}
+                style={{
+                  width: "100%",
+                  padding: "14px 16px",
+                  background: "rgba(13,13,18,0.8)",
+                  border: "1px solid rgba(201,168,76,0.2)",
+                  color: "#EDE8DC",
+                  fontSize: 15,
+                  fontFamily: "'Jost', sans-serif",
+                  fontWeight: 300,
+                  lineHeight: 1.6,
+                  resize: "vertical",
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+                onFocus={(e) => e.target.style.borderColor = "rgba(201,168,76,0.5)"}
+                onBlur={(e) => e.target.style.borderColor = "rgba(201,168,76,0.2)"}
+              />
+              <div style={{ textAlign: "right", fontSize: 11, color: "#8a8070", marginTop: 4 }}>
+                {optionalResponses.intention.length} / 300
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 40 }}>
+              <label style={{
+                display: "block",
+                fontSize: 20,
+                fontWeight: 300,
+                color: "#EDE8DC",
+                fontFamily: "'Cormorant Garamond', serif",
+                marginBottom: 12,
+              }}>
+                Is there anything you want to make sure this reflection captures?
+              </label>
+              <textarea
+                value={optionalResponses.context}
+                onChange={(e) => setOptionalResponses((prev) => ({ ...prev, context: e.target.value.slice(0, 300) }))}
+                placeholder="Optional — leave blank if nothing comes to mind"
+                rows={3}
+                style={{
+                  width: "100%",
+                  padding: "14px 16px",
+                  background: "rgba(13,13,18,0.8)",
+                  border: "1px solid rgba(201,168,76,0.2)",
+                  color: "#EDE8DC",
+                  fontSize: 15,
+                  fontFamily: "'Jost', sans-serif",
+                  fontWeight: 300,
+                  lineHeight: 1.6,
+                  resize: "vertical",
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+                onFocus={(e) => e.target.style.borderColor = "rgba(201,168,76,0.5)"}
+                onBlur={(e) => e.target.style.borderColor = "rgba(201,168,76,0.2)"}
+              />
+              <div style={{ textAlign: "right", fontSize: 11, color: "#8a8070", marginTop: 4 }}>
+                {optionalResponses.context.length} / 300
+              </div>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "center", gap: 16 }}>
+              <button
+                style={{
+                  ...styles.backBtn,
+                  fontSize: 13,
+                  padding: "12px 24px",
+                }}
+                onClick={() => goToResults(optionalResponses)}
+              >
+                Skip
+              </button>
+              <button
+                style={{
+                  ...styles.nextBtn,
+                  padding: "12px 36px",
+                  ...(hoveredBtn === "optional-next"
+                    ? { background: "rgba(201,168,76,0.08)", borderColor: "#C9A84C" }
+                    : {}),
+                }}
+                onMouseEnter={() => setHoveredBtn("optional-next")}
+                onMouseLeave={() => setHoveredBtn(null)}
+                onClick={() => goToResults(optionalResponses)}
+              >
+                See Results →
               </button>
             </div>
           </div>
