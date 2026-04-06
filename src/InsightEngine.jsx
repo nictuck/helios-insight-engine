@@ -217,6 +217,37 @@ export default function InsightEngine() {
   const [submitError, setSubmitError] = useState("");
   const [consentChecked, setConsentChecked] = useState(false);
   const [fadeIn, setFadeIn] = useState(false);
+  const [insightLoading, setInsightLoading] = useState(false);
+
+  const generateInsights = async (computed) => {
+    try {
+      const response = await fetch("/.netlify/functions/generate-insights", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scores: computed }),
+      });
+      if (!response.ok) throw new Error("API error");
+      const data = await response.json();
+      return data.insights;
+    } catch {
+      // Fall back to template-based insights if API is unavailable
+      return MOCK_INSIGHTS(computed);
+    }
+  };
+
+  const startTypewriter = (fullText) => {
+    let idx = 0;
+    const typeInterval = setInterval(() => {
+      idx += 3;
+      if (idx >= fullText.length) {
+        idx = fullText.length;
+        clearInterval(typeInterval);
+        setTimeout(() => setShowCTA(true), 600);
+      }
+      setInsightText(fullText.slice(0, idx));
+      setInsightIndex(idx);
+    }, 8);
+  };
 
   // Dev shortcut: add ?preview to URL to skip straight to results
   useEffect(() => {
@@ -228,13 +259,14 @@ export default function InsightEngine() {
       setScores(previewScores);
       setScreen("results");
       setTimeout(() => setShowChart(true), 400);
-      setTimeout(() => {
-        setShowInsights(true);
-        const fullText = MOCK_INSIGHTS(previewScores);
+      setShowInsights(true);
+      setInsightLoading(true);
+      generateInsights(previewScores).then((fullText) => {
+        setInsightLoading(false);
         setInsightText(fullText);
         setInsightIndex(fullText.length);
         setShowCTA(true);
-      }, 800);
+      });
     }
   }, []);
 
@@ -329,18 +361,11 @@ export default function InsightEngine() {
       setTimeout(() => setShowChart(true), 400);
       setTimeout(() => {
         setShowInsights(true);
-        const fullText = MOCK_INSIGHTS(computed);
-        let idx = 0;
-        const typeInterval = setInterval(() => {
-          idx += 3;
-          if (idx >= fullText.length) {
-            idx = fullText.length;
-            clearInterval(typeInterval);
-            setTimeout(() => setShowCTA(true), 600);
-          }
-          setInsightText(fullText.slice(0, idx));
-          setInsightIndex(idx);
-        }, 8);
+        setInsightLoading(true);
+        generateInsights(computed).then((fullText) => {
+          setInsightLoading(false);
+          startTypewriter(fullText);
+        });
       }, 2000);
     }
   };
@@ -706,7 +731,13 @@ export default function InsightEngine() {
                     fontWeight: 400,
                   }}
                 >
-                  {renderMarkdown(insightText)}
+                  {insightLoading ? (
+                    <p style={{ color: "#8a8070", fontStyle: "italic" }}>
+                      Reading your results…
+                    </p>
+                  ) : (
+                    renderMarkdown(insightText)
+                  )}
                 </div>
               </div>
             )}
