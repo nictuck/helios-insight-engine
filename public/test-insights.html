@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Insights Tester — Helios</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            helios: { DEFAULT: '#C4872A', light: '#F5E6CC', dark: '#8A5D1A' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    input[type=range] { accent-color: #C4872A; }
+    .prose p { margin-bottom: 1rem; }
+    .prose strong { font-weight: 600; }
+    .prose em { font-style: italic; }
+    .prose ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
+    .prose li { margin-bottom: 0.25rem; }
+  </style>
+</head>
+<body class="bg-stone-50 text-stone-800 min-h-screen">
+
+  <div class="max-w-6xl mx-auto px-6 py-8">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-semibold text-stone-900">Insights Tester</h1>
+        <p class="text-sm text-stone-500 mt-0.5">Sends directly to <code class="bg-stone-100 px-1 rounded">/.netlify/functions/generate-insights</code></p>
+      </div>
+      <button id="generateBtn"
+        class="bg-helios text-white px-6 py-2.5 rounded-lg font-medium hover:bg-helios-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2">
+        <span id="btnText">Generate</span>
+        <svg id="spinner" class="hidden animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="grid grid-cols-2 gap-8">
+
+      <!-- LEFT: Inputs -->
+      <div class="space-y-6">
+
+        <!-- Personality + Duration row -->
+        <div class="bg-white border border-stone-200 rounded-xl p-5 space-y-4">
+          <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wider">Request</h2>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-stone-600 mb-1">Personality</label>
+              <select id="personality"
+                class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-helios/40 bg-white">
+                <option value="">Loading…</option>
+              </select>
+              <p class="text-xs text-stone-400 mt-1">Reads from <code class="bg-stone-100 px-0.5 rounded">prompts/</code></p>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-stone-600 mb-1">Total Duration (seconds)</label>
+              <input id="totalDuration" type="number" value="480" min="0"
+                class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-helios/40" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Scores -->
+        <div class="bg-white border border-stone-200 rounded-xl p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wider">Scores & Behavioral</h2>
+            <button id="randomizeBtn" class="text-xs text-helios hover:text-helios-dark font-medium">Randomize scores</button>
+          </div>
+          <div id="categoriesContainer" class="space-y-3"></div>
+        </div>
+
+        <!-- Optional Responses -->
+        <div class="bg-white border border-stone-200 rounded-xl p-5 space-y-4">
+          <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wider">Optional Responses</h2>
+          <div>
+            <label class="block text-xs font-medium text-stone-600 mb-1">What brought you here? (intention)</label>
+            <textarea id="intention" rows="2"
+              class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-helios/40 resize-none"
+              placeholder="Leave blank to omit"></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-stone-600 mb-1">Anything you want the reflection to capture? (context)</label>
+            <textarea id="context" rows="2"
+              class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-helios/40 resize-none"
+              placeholder="Leave blank to omit"></textarea>
+          </div>
+        </div>
+
+        <!-- Raw payload preview -->
+        <div class="bg-white border border-stone-200 rounded-xl p-5">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wider">Payload Preview</h2>
+            <button id="copyPayloadBtn" class="text-xs text-helios hover:text-helios-dark font-medium">Copy</button>
+          </div>
+          <pre id="payloadPreview" class="text-xs text-stone-600 overflow-x-auto bg-stone-50 rounded-lg p-3 max-h-48"></pre>
+        </div>
+      </div>
+
+      <!-- RIGHT: Output -->
+      <div class="space-y-4">
+        <div class="bg-white border border-stone-200 rounded-xl p-5 min-h-[200px]">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wider">Output</h2>
+            <div class="flex items-center gap-3">
+              <span id="resolvedPersonality" class="text-xs text-stone-400 hidden">
+                personality: <span id="resolvedPersonalityValue" class="font-mono text-helios"></span>
+              </span>
+              <button id="copyOutputBtn" class="text-xs text-helios hover:text-helios-dark font-medium hidden">Copy markdown</button>
+            </div>
+          </div>
+          <div id="outputArea">
+            <p class="text-stone-400 text-sm">Output will appear here after generating.</p>
+          </div>
+        </div>
+
+        <!-- Error -->
+        <div id="errorBox" class="hidden bg-red-50 border border-red-200 rounded-xl p-4">
+          <p class="text-sm font-medium text-red-700 mb-1">Error</p>
+          <pre id="errorText" class="text-xs text-red-600 whitespace-pre-wrap"></pre>
+        </div>
+
+        <!-- History -->
+        <div id="historySection" class="hidden bg-white border border-stone-200 rounded-xl p-5">
+          <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wider mb-3">History (this session)</h2>
+          <div id="historyList" class="space-y-3"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const CATEGORIES = [
+  { id: 'career',        label: 'Career & Purpose' },
+  { id: 'relationships', label: 'Relationships' },
+  { id: 'health',        label: 'Health & Vitality' },
+  { id: 'finance',       label: 'Financial Health' },
+  { id: 'growth',        label: 'Personal Growth' },
+  { id: 'joy',           label: 'Joy & Recreation' },
+  { id: 'family',        label: 'Family & Community' },
+  { id: 'environment',   label: 'Physical Environment' },
+];
+
+const state = {};
+CATEGORIES.forEach(c => {
+  state[c.id] = {
+    score: 5,
+    elapsedSeconds: 0,
+    sliderChanges: 0,
+    revisited: false,
+    scoreChanged: false,
+    originalScore: 5,
+  };
+});
+
+// Build category rows
+const container = document.getElementById('categoriesContainer');
+CATEGORIES.forEach(cat => {
+  const s = state[cat.id];
+  const row = document.createElement('div');
+  row.className = 'border border-stone-100 rounded-lg overflow-hidden';
+
+  row.innerHTML = `
+    <div class="flex items-center gap-3 px-4 py-3">
+      <span class="text-xs font-medium text-stone-600 w-36 shrink-0">${cat.label}</span>
+      <input type="range" min="0" max="10" step="0.5" value="${s.score}"
+        data-id="${cat.id}" data-type="score"
+        class="flex-1 h-1.5 cursor-pointer" />
+      <span class="text-sm font-semibold text-helios w-8 text-right score-display" data-id="${cat.id}">${s.score}</span>
+      <button class="expand-btn text-stone-300 hover:text-stone-500 transition-colors ml-1" data-id="${cat.id}" title="Behavioral data">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
+    </div>
+    <div class="behavioral-panel hidden bg-stone-50 border-t border-stone-100 px-4 py-3 grid grid-cols-2 gap-3" data-id="${cat.id}">
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Elapsed seconds</label>
+        <input type="number" min="0" value="0" data-id="${cat.id}" data-type="elapsedSeconds"
+          class="w-full border border-stone-200 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-helios/40" />
+      </div>
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Slider changes</label>
+        <input type="number" min="0" value="0" data-id="${cat.id}" data-type="sliderChanges"
+          class="w-full border border-stone-200 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-helios/40" />
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="checkbox" id="${cat.id}_revisited" data-id="${cat.id}" data-type="revisited"
+          class="rounded accent-helios" />
+        <label for="${cat.id}_revisited" class="text-xs text-stone-500 cursor-pointer">Revisited</label>
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="checkbox" id="${cat.id}_scoreChanged" data-id="${cat.id}" data-type="scoreChanged"
+          class="rounded accent-helios" />
+        <label for="${cat.id}_scoreChanged" class="text-xs text-stone-500 cursor-pointer">Score changed</label>
+      </div>
+      <div class="col-span-2">
+        <label class="block text-xs text-stone-500 mb-1">Original score (if changed)</label>
+        <input type="number" min="0" max="10" step="0.5" value="5" data-id="${cat.id}" data-type="originalScore"
+          class="w-full border border-stone-200 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-helios/40" />
+      </div>
+    </div>
+  `;
+
+  container.appendChild(row);
+});
+
+// Event: score sliders
+document.querySelectorAll('input[data-type="score"]').forEach(el => {
+  el.addEventListener('input', () => {
+    const id = el.dataset.id;
+    state[id].score = parseFloat(el.value);
+    document.querySelector(`.score-display[data-id="${id}"]`).textContent = el.value;
+    updatePayload();
+  });
+});
+
+// Event: behavioral inputs
+document.querySelectorAll('input[data-type="elapsedSeconds"], input[data-type="sliderChanges"], input[data-type="originalScore"]').forEach(el => {
+  el.addEventListener('input', () => {
+    state[el.dataset.id][el.dataset.type] = parseFloat(el.value) || 0;
+    updatePayload();
+  });
+});
+document.querySelectorAll('input[data-type="revisited"], input[data-type="scoreChanged"]').forEach(el => {
+  el.addEventListener('change', () => {
+    state[el.dataset.id][el.dataset.type] = el.checked;
+    updatePayload();
+  });
+});
+
+// Event: expand behavioral panels
+document.querySelectorAll('.expand-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const panel = document.querySelector(`.behavioral-panel[data-id="${btn.dataset.id}"]`);
+    panel.classList.toggle('hidden');
+    btn.querySelector('svg').style.transform = panel.classList.contains('hidden') ? '' : 'rotate(180deg)';
+  });
+});
+
+// Load personalities from function
+(async () => {
+  const select = document.getElementById('personality');
+  try {
+    const res = await fetch('/.netlify/functions/list-personalities');
+    const data = await res.json();
+    select.innerHTML = '';
+    data.personalities.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = p === data.default ? `${p} (default)` : p;
+      opt.selected = p === data.default;
+      select.appendChild(opt);
+    });
+  } catch {
+    select.innerHTML = '<option value="grounded-coach">grounded-coach (default)</option>';
+  }
+  updatePayload();
+})();
+
+// Event: optional responses + other inputs
+['totalDuration', 'intention', 'context'].forEach(id => {
+  document.getElementById(id).addEventListener('input', updatePayload);
+});
+document.getElementById('personality').addEventListener('change', updatePayload);
+
+// Randomize
+document.getElementById('randomizeBtn').addEventListener('click', () => {
+  CATEGORIES.forEach(cat => {
+    const score = Math.round((Math.random() * 10) * 2) / 2;
+    state[cat.id].score = score;
+    const slider = document.querySelector(`input[data-type="score"][data-id="${cat.id}"]`);
+    slider.value = score;
+    document.querySelector(`.score-display[data-id="${cat.id}"]`).textContent = score;
+  });
+  updatePayload();
+});
+
+function buildPayload() {
+  const scores = {};
+  const behavioral = {};
+
+  CATEGORIES.forEach(cat => {
+    const s = state[cat.id];
+    scores[cat.id] = s.score;
+    const b = {};
+    if (s.elapsedSeconds > 0) b.elapsedSeconds = s.elapsedSeconds;
+    if (s.sliderChanges > 0) b.sliderChanges = s.sliderChanges;
+    if (s.revisited) {
+      b.revisited = true;
+      b.scoreChanged = s.scoreChanged;
+      if (s.scoreChanged) b.originalScore = s.originalScore;
+    }
+    if (Object.keys(b).length > 0) behavioral[cat.id] = b;
+  });
+
+  const payload = { scores };
+
+  if (Object.keys(behavioral).length > 0) payload.behavioral = behavioral;
+
+  const duration = parseInt(document.getElementById('totalDuration').value);
+  if (duration > 0) payload.totalDurationSeconds = duration;
+
+  const optionalResponses = {};
+  const intention = document.getElementById('intention').value.trim();
+  const context = document.getElementById('context').value.trim();
+  if (intention) optionalResponses.intention = intention;
+  if (context) optionalResponses.context = context;
+  if (Object.keys(optionalResponses).length > 0) payload.optionalResponses = optionalResponses;
+
+  const personality = document.getElementById('personality').value.trim();
+  if (personality) payload.personality = personality;
+
+  return payload;
+}
+
+function updatePayload() {
+  document.getElementById('payloadPreview').textContent = JSON.stringify(buildPayload(), null, 2);
+}
+
+updatePayload();
+
+// Copy payload
+document.getElementById('copyPayloadBtn').addEventListener('click', () => {
+  navigator.clipboard.writeText(JSON.stringify(buildPayload(), null, 2));
+});
+
+// Markdown renderer (simple)
+function renderMarkdown(text) {
+  return text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>')
+    .replace(/(<li>.*<\/li>)/gs, m => `<ol>${m}</ol>`)
+    .split(/\n\n+/).map(p => p.trim() ? `<p>${p.replace(/\n/g, '<br>')}</p>` : '').join('');
+}
+
+// History
+const history = [];
+function addToHistory(payload, result) {
+  history.unshift({ payload, result, time: new Date().toLocaleTimeString() });
+  if (history.length > 10) history.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  const section = document.getElementById('historySection');
+  const list = document.getElementById('historyList');
+  section.classList.remove('hidden');
+  list.innerHTML = history.map((h, i) => `
+    <div class="border border-stone-100 rounded-lg p-3 cursor-pointer hover:bg-stone-50 transition-colors" data-index="${i}">
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-xs font-medium text-stone-600">${h.time}</span>
+        <span class="text-xs font-mono text-helios">${h.result.personality || 'default'}</span>
+      </div>
+      <p class="text-xs text-stone-400 truncate">${h.result.insights.substring(0, 80)}…</p>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('[data-index]').forEach(el => {
+    el.addEventListener('click', () => {
+      const h = history[parseInt(el.dataset.index)];
+      showOutput(h.result);
+    });
+  });
+}
+
+function showOutput(result) {
+  const area = document.getElementById('outputArea');
+  area.innerHTML = `<div class="prose text-sm text-stone-700 leading-relaxed">${renderMarkdown(result.insights)}</div>`;
+
+  const resolvedEl = document.getElementById('resolvedPersonality');
+  document.getElementById('resolvedPersonalityValue').textContent = result.personality || 'default';
+  resolvedEl.classList.remove('hidden');
+
+  const copyBtn = document.getElementById('copyOutputBtn');
+  copyBtn.classList.remove('hidden');
+  copyBtn.onclick = () => navigator.clipboard.writeText(result.insights);
+}
+
+// Generate
+document.getElementById('generateBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('generateBtn');
+  const spinner = document.getElementById('spinner');
+  const btnText = document.getElementById('btnText');
+  const errorBox = document.getElementById('errorBox');
+
+  btn.disabled = true;
+  spinner.classList.remove('hidden');
+  btnText.textContent = 'Generating…';
+  errorBox.classList.add('hidden');
+  document.getElementById('outputArea').innerHTML = '<p class="text-stone-400 text-sm">Generating…</p>';
+
+  const payload = buildPayload();
+
+  try {
+    const res = await fetch('/.netlify/functions/generate-insights', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+    showOutput(data);
+    addToHistory(payload, data);
+  } catch (err) {
+    errorBox.classList.remove('hidden');
+    document.getElementById('errorText').textContent = err.message;
+    document.getElementById('outputArea').innerHTML = '<p class="text-stone-400 text-sm">Generation failed.</p>';
+  } finally {
+    btn.disabled = false;
+    spinner.classList.add('hidden');
+    btnText.textContent = 'Generate';
+  }
+});
+</script>
+</body>
+</html>
