@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import AuraDaisy from "./AuraDaisy";
+import VoiceSelection from "./VoiceSelection";
 
 const CATEGORIES = [
   { id: "career", label: "Career & Purpose", icon: "◈", color: "#D4A574" },
@@ -221,6 +222,7 @@ export default function InsightEngine() {
   const [questionMetrics, setQuestionMetrics] = useState({});
   const [assessmentStart, setAssessmentStart] = useState(null);
   const [optionalResponses, setOptionalResponses] = useState({ intention: "", context: "" });
+  const [personality, setPersonality] = useState("grounded-coach");
 
   const generateInsights = async (computed, behavioral, totalDurationSeconds, optional) => {
     try {
@@ -232,6 +234,7 @@ export default function InsightEngine() {
           behavioral: behavioral || {},
           totalDurationSeconds: totalDurationSeconds || null,
           optionalResponses: optional || { intention: "", context: "" },
+          personality,
         }),
       });
       if (!response.ok) throw new Error("API error");
@@ -329,6 +332,7 @@ export default function InsightEngine() {
     setQuestionMetrics({});
     setAssessmentStart(null);
     setOptionalResponses({ intention: "", context: "" });
+    setPersonality("grounded-coach");
   };
 
   const handleOptIn = async () => {
@@ -668,7 +672,7 @@ export default function InsightEngine() {
                 style={{ ...styles.btn, ...(hoveredBtn === "start" ? styles.btnHover : {}) }}
                 onMouseEnter={() => setHoveredBtn("start")}
                 onMouseLeave={() => setHoveredBtn(null)}
-                onClick={() => { setAssessmentStart(Date.now()); setScreen("assessment"); }}
+                onClick={() => setScreen("voice")}
               >
                 Begin
               </button>
@@ -677,6 +681,16 @@ export default function InsightEngine() {
               No account required · No personal information collected · Takes 3–5 minutes
             </p>
           </div>
+        )}
+
+        {screen === "voice" && (
+          <VoiceSelection
+            value={personality}
+            onChange={setPersonality}
+            onContinue={() => { setAssessmentStart(Date.now()); setScreen("assessment"); }}
+            onSkip={() => { setPersonality("grounded-coach"); setAssessmentStart(Date.now()); setScreen("assessment"); }}
+            fadeIn={fadeIn}
+          />
         )}
 
         {screen === "assessment" && (
