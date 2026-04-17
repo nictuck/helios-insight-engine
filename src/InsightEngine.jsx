@@ -533,12 +533,11 @@ export default function InsightEngine() {
       marginBottom: 48,
     },
     logoText: {
-      fontSize: 14,
-      letterSpacing: 6,
-      textTransform: "uppercase",
-      color: "#C9A84C",
-      fontFamily: "'Jost', sans-serif",
-      fontWeight: 300,
+      fontSize: 26,
+      letterSpacing: "0.12em",
+      color: "#E8C97A",
+      fontFamily: "'Cormorant Garamond', serif",
+      fontWeight: 500,
     },
     h1: {
       fontSize: 42,
@@ -657,7 +656,24 @@ export default function InsightEngine() {
 
       <div style={styles.content}>
         <div style={styles.logo}>
-          <div style={styles.logoText}>Helios</div>
+          <div style={styles.logoText}>
+            HELI
+            <span
+              style={{
+                color: "#F4A832",
+                fontSize: "1.25em",
+                lineHeight: 1,
+                verticalAlign: "top",
+                position: "relative",
+                top: "0.05em",
+                marginLeft: "-0.13em",
+                letterSpacing: "-0.07em",
+              }}
+            >
+              ☉
+            </span>
+            S
+          </div>
         </div>
 
         {screen === "landing" && (
