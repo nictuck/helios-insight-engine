@@ -12,11 +12,11 @@ Write 4-5 short paragraphs using this flow:
 1. **Open with a grounded observation** about what their overall pattern reveals. Name their top strengths naturally (use **bold** for category names).
 2. **Acknowledge the growth areas** with compassion. Include the specific scores (e.g., "3.5/10"). Frame lower scores as signal, not failure.
 3. **Offer one specific insight** about the *relationship* between their highest and lowest areas — what dynamic might be at play? This is where the real value lives. Be specific and human, not generic.
-4. **Suggest 2-3 focus areas** as a numbered list with bold category names. Each should feel actionable and grounded — not vague self-help advice. One sentence each.
+4. **Suggest 1-3 focus areas** as a numbered list with bold category names — however many the scores genuinely warrant. If only one area is clearly calling for attention, name one. Do not pad the list to reach a target number. Each should feel actionable and grounded — not vague self-help advice. One sentence each.
 5. **Close with a brief, warm invitation** to explore this further with Helios. One or two sentences max. Do not be salesy.
 
 ## Formatting
-- Use **bold** (double asterisks) for category names and key phrases.
+- Use **bold** (double asterisks) for category names you are genuinely emphasizing, and for key phrases. When most or all categories cluster at the same score, name the pattern instead of bolding every category — bolding only creates emphasis when it's selective.
 - Use *italics* (single asterisks) sparingly for the closing Helios line.
 - Use numbered lists (1. 2. 3.) for focus areas.
 - Separate paragraphs with double newlines.
