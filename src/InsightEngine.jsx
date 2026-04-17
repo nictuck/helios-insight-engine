@@ -533,11 +533,14 @@ export default function InsightEngine() {
       marginBottom: 48,
     },
     logoText: {
+      display: "inline-block",
       fontSize: 26,
+      lineHeight: 1,
       letterSpacing: "0.12em",
       color: "#E8C97A",
       fontFamily: "'Cormorant Garamond', serif",
       fontWeight: 500,
+      textDecoration: "none",
     },
     h1: {
       fontSize: 42,
