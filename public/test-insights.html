@@ -4,7 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Insights Tester — Helios</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+  (function() {
+    const PASS = '2ybedY8kmvUnjRZ';
+    const KEY = 'helios_tester_auth';
+    if (sessionStorage.getItem(KEY) !== PASS) {
+      const input = window.prompt('Password required:');
+      if (input !== PASS) {
+        document.documentElement.innerHTML = '<body style="font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#fafaf9;color:#666"><p>Access denied.</p></body>';
+        throw new Error('Unauthorized');
+      }
+      sessionStorage.setItem(KEY, PASS);
+    }
+  })();
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
