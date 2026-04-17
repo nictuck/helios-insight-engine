@@ -369,6 +369,10 @@ export default function InsightEngine() {
 
   const totalQuestions = CATEGORIES.reduce((sum, c) => sum + QUESTIONS[c.id].length, 0);
   const answeredCount = Object.keys(answers).length;
+  const questionsBeforeCurrentCategory = CATEGORIES
+    .slice(0, currentCategory)
+    .reduce((sum, c) => sum + QUESTIONS[c.id].length, 0);
+  const currentQuestionPosition = questionsBeforeCurrentCategory + currentQuestion;
 
   const cat = CATEGORIES[currentCategory];
   const questions = cat ? QUESTIONS[cat.id] : [];
@@ -709,7 +713,7 @@ export default function InsightEngine() {
         {screen === "assessment" && (
           <div style={{ opacity: fadeIn ? 1 : 0, transition: "opacity 0.5s ease", transitionDelay: "0.05s" }}>
             <div style={styles.progressBar}>
-              <div style={{ ...styles.progressFill, width: `${(answeredCount / totalQuestions) * 100}%` }} />
+              <div style={{ ...styles.progressFill, width: `${(currentQuestionPosition / totalQuestions) * 100}%` }} />
             </div>
 
             <div style={styles.categoryLabel}>
