@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { PROMPTS, DEFAULT_PERSONALITY } from "./lib/load-prompts.js";
 import { buildUserMessage } from "./lib/build-user-message.js";
+import { evaluateEngagement, REDIRECT_RESPONSES } from "./lib/engagement-gate.js";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -25,6 +26,26 @@ export const handler = async (event) => {
       } else {
         console.warn(`Unknown personality '${personality}', falling back to '${DEFAULT_PERSONALITY}'`);
       }
+    }
+
+    const engagement = evaluateEngagement({
+      behavioral,
+      totalDurationSeconds,
+      optionalResponses,
+      personality: resolvedId,
+    });
+
+    if (!engagement.engaged) {
+      const redirect = REDIRECT_RESPONSES[engagement.personality];
+      if (redirect) {
+        console.log(`Engagement gate tripped (personality='${engagement.personality}', duration=${totalDurationSeconds}s) — returning redirect.`);
+        return {
+          statusCode: 200,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ insights: redirect, personality: engagement.personality, gated: true }),
+        };
+      }
+      console.warn(`Engagement gate tripped but no REDIRECT_RESPONSES entry for '${engagement.personality}' — falling through to normal generation.`);
     }
 
     const systemPrompt = PROMPTS[resolvedId];
