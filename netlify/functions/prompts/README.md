@@ -14,3 +14,4 @@ Each `.md` file in this directory is a complete system prompt for a distinct Hel
 | ID | File | Description |
 |----|------|-------------|
 | `grounded-coach` | `grounded-coach.md` | Warm, grounded life coach. Default voice. |
+| `systems-observer` | `systems-observer.md` | Systems-literate observer. Patterns, dynamics, leverage points. No affirmation, no CTA. |
