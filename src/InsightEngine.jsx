@@ -533,9 +533,7 @@ export default function InsightEngine() {
       marginBottom: 48,
     },
     logoText: {
-      display: "inline-block",
       fontSize: 26,
-      lineHeight: 1,
       letterSpacing: "0.12em",
       color: "#E8C97A",
       fontFamily: "'Cormorant Garamond', serif",
@@ -659,9 +657,8 @@ export default function InsightEngine() {
 
       <div style={styles.content}>
         <div style={styles.logo}>
-          <div style={styles.logoText}>
-            HELI
-            <span
+          <a href="#" style={styles.logoText} onClick={(e) => e.preventDefault()}>
+            HELI<span
               style={{
                 color: "#F4A832",
                 fontSize: "1.25em",
@@ -672,11 +669,8 @@ export default function InsightEngine() {
                 marginLeft: "-0.13em",
                 letterSpacing: "-0.07em",
               }}
-            >
-              ☉
-            </span>
-            S
-          </div>
+            >☉</span>S
+          </a>
         </div>
 
         {screen === "landing" && (
