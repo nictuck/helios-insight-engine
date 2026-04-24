@@ -3,14 +3,14 @@ import AuraDaisy from "./AuraDaisy";
 import VoiceSelection from "./VoiceSelection";
 
 const CATEGORIES = [
-  { id: "career", label: "Career & Purpose", icon: "◈", color: "#D4A574" },
-  { id: "relationships", label: "Relationships", icon: "◇", color: "#A8C4D4" },
-  { id: "health", label: "Health & Vitality", icon: "○", color: "#B8D4A8" },
-  { id: "finance", label: "Financial Health", icon: "△", color: "#D4C4A8" },
-  { id: "growth", label: "Personal Growth", icon: "☆", color: "#C4A8D4" },
-  { id: "joy", label: "Joy & Recreation", icon: "◎", color: "#D4A8B8" },
-  { id: "family", label: "Family & Community", icon: "⬡", color: "#A8D4C4" },
-  { id: "environment", label: "Physical Environment", icon: "□", color: "#D4D4A8" },
+  { id: "career", label: "Career & Purpose", icon: "◈" },
+  { id: "relationships", label: "Relationships", icon: "◇" },
+  { id: "health", label: "Health & Vitality", icon: "○" },
+  { id: "finance", label: "Financial Health", icon: "△" },
+  { id: "growth", label: "Personal Growth", icon: "☆" },
+  { id: "joy", label: "Joy & Recreation", icon: "◎" },
+  { id: "family", label: "Family & Community", icon: "⬡" },
+  { id: "environment", label: "Physical Environment", icon: "□" },
 ];
 
 const QUESTIONS = {
@@ -135,7 +135,7 @@ function SliderInput({ value, onChange }) {
             left: 0,
             right: 0,
             height: 3,
-            background: "rgba(212,165,116,0.15)",
+            background: "var(--track-rail)",
             borderRadius: 2,
           }}
         />
@@ -145,7 +145,7 @@ function SliderInput({ value, onChange }) {
             left: 0,
             width: `${pct}%`,
             height: 3,
-            background: "linear-gradient(90deg, rgba(212,165,116,0.3), #D4A574)",
+            background: "linear-gradient(90deg, var(--border-subtle), var(--gold))",
             borderRadius: 2,
             transition: dragging ? "none" : "width 0.15s ease",
           }}
@@ -158,7 +158,7 @@ function SliderInput({ value, onChange }) {
               left: `${(i / 9) * 100}%`,
               width: 2,
               height: i % 5 === 0 ? 10 : 6,
-              background: i + 1 <= value ? "rgba(212,165,116,0.5)" : "rgba(212,165,116,0.15)",
+              background: i + 1 <= value ? "var(--track-tick-on)" : "var(--track-tick-off)",
               borderRadius: 1,
               transform: "translateX(-50%)",
               transition: "background 0.2s",
@@ -173,15 +173,15 @@ function SliderInput({ value, onChange }) {
             width: 28,
             height: 28,
             borderRadius: "50%",
-            background: "#0D0D12",
-            border: "2px solid #D4A574",
-            boxShadow: "0 0 20px rgba(212,165,116,0.3)",
+            background: "var(--bg)",
+            border: "2px solid var(--gold)",
+            boxShadow: "0 0 20px rgba(154,111,32,0.25)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             fontSize: 11,
             fontWeight: 600,
-            color: "#D4A574",
+            color: "var(--gold)",
             fontFamily: "'Jost', sans-serif",
             transition: dragging ? "none" : "left 0.15s ease",
           }}
@@ -190,14 +190,55 @@ function SliderInput({ value, onChange }) {
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-        <span style={{ fontSize: 11, color: "#8a8070", fontFamily: "'Jost', sans-serif" }}>
+        <span style={{ fontSize: 11, color: "var(--muted)", fontFamily: "'Jost', sans-serif", letterSpacing: "0.08em" }}>
           Needs attention
         </span>
-        <span style={{ fontSize: 11, color: "#8a8070", fontFamily: "'Jost', sans-serif" }}>
+        <span style={{ fontSize: 11, color: "var(--muted)", fontFamily: "'Jost', sans-serif", letterSpacing: "0.08em" }}>
           Thriving
         </span>
       </div>
     </div>
+  );
+}
+
+function HeliosWordmark() {
+  return (
+    <span className="helios-wordmark" aria-label="Helios">
+      HEL
+      <span className="helios-wordmark__icon" aria-hidden="true">
+        <span className="helios-wordmark__sun"></span>
+        <span className="helios-wordmark__orbit helios-wordmark__orbit--1">
+          <span className="helios-wordmark__planet helios-wordmark__planet--1"></span>
+        </span>
+        <span className="helios-wordmark__orbit helios-wordmark__orbit--2">
+          <span className="helios-wordmark__planet helios-wordmark__planet--2"></span>
+        </span>
+      </span>
+      OS
+    </span>
+  );
+}
+
+function ThemeToggle({ theme, onToggle }) {
+  return (
+    <button
+      className="theme-toggle"
+      aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+      title="Toggle theme"
+      onClick={onToggle}
+      type="button"
+    >
+      <svg className="theme-icon theme-icon--moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+      </svg>
+      <svg className="theme-icon theme-icon--sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="5" />
+        <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+        <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+      </svg>
+    </button>
   );
 }
 
@@ -210,7 +251,7 @@ export default function InsightEngine() {
   const [showChart, setShowChart] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
   const [insightText, setInsightText] = useState("");
-  const [insightIndex, setInsightIndex] = useState(0);
+  const [, setInsightIndex] = useState(0);
   const [showCTA, setShowCTA] = useState(false);
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -223,6 +264,37 @@ export default function InsightEngine() {
   const [assessmentStart, setAssessmentStart] = useState(null);
   const [optionalResponses, setOptionalResponses] = useState({ intention: "", context: "" });
   const [personality, setPersonality] = useState("grounded-coach");
+  const [scrolled, setScrolled] = useState(false);
+
+  // Theme state — synced with <html data-theme> and localStorage
+  const [theme, setTheme] = useState(() => {
+    if (typeof document === "undefined") return "light";
+    return document.documentElement.getAttribute("data-theme") || "light";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem("helios-theme", theme); } catch (e) { /* storage may be blocked */ }
+    if (window.HeliosNebula) window.HeliosNebula.setTheme(theme);
+  }, [theme]);
+
+  useEffect(() => {
+    // Add theme-ready class after first paint so transitions don't fire on load
+    const rafId = requestAnimationFrame(() => {
+      document.body.classList.add("theme-ready");
+    });
+    // Set initial nebula scene
+    if (window.HeliosNebula) window.HeliosNebula.setScene("home");
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
 
   const generateInsights = async (computed, behavioral, totalDurationSeconds, optional) => {
     try {
@@ -241,7 +313,6 @@ export default function InsightEngine() {
       const data = await response.json();
       return data.insights;
     } catch {
-      // Fall back to template-based insights if API is unavailable
       return MOCK_INSIGHTS(computed);
     }
   };
@@ -260,7 +331,6 @@ export default function InsightEngine() {
     }, 8);
   };
 
-  // Dev shortcut: add ?preview to URL to skip straight to results
   useEffect(() => {
     if (new URLSearchParams(window.location.search).has("preview")) {
       const previewScores = {
@@ -279,6 +349,7 @@ export default function InsightEngine() {
         setShowCTA(true);
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -286,17 +357,13 @@ export default function InsightEngine() {
     return () => clearTimeout(timer);
   }, [screen]);
 
-  useEffect(() => {
-    setFadeIn(false);
-  }, [screen]);
+  useEffect(() => { setFadeIn(false); }, [screen]);
 
-  // Track start time for each category
   useEffect(() => {
     if (screen !== "assessment") return;
     const catId = CATEGORIES[currentCategory]?.id;
     if (!catId) return;
     setQuestionMetrics((prev) => {
-      // Don't reset startTime on revisit — we only reset it when computing elapsed
       if (prev[catId]?.startTime && !prev[catId]?.endTime) return prev;
       return {
         ...prev,
@@ -368,7 +435,6 @@ export default function InsightEngine() {
   };
 
   const totalQuestions = CATEGORIES.reduce((sum, c) => sum + QUESTIONS[c.id].length, 0);
-  const answeredCount = Object.keys(answers).length;
   const questionsBeforeCurrentCategory = CATEGORIES
     .slice(0, currentCategory)
     .reduce((sum, c) => sum + QUESTIONS[c.id].length, 0);
@@ -475,8 +541,8 @@ export default function InsightEngine() {
       .split("\n\n")
       .filter(Boolean)
       .map((block, i) => {
-        block = block.replace(/\*\*(.+?)\*\*/g, '<strong style="color:#E8C97A">$1</strong>');
-        block = block.replace(/\*(.+?)\*/g, '<em style="color:#b8b0a0">$1</em>');
+        block = block.replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--gold-light)">$1</strong>');
+        block = block.replace(/\*(.+?)\*/g, '<em style="color:var(--text-dim);font-style:italic">$1</em>');
         if (block.startsWith("1.") || block.startsWith("2.") || block.startsWith("3.")) {
           return (
             <p key={i} style={{ margin: "12px 0", paddingLeft: 8 }} dangerouslySetInnerHTML={{ __html: block }} />
@@ -486,215 +552,43 @@ export default function InsightEngine() {
       });
   };
 
-  const styles = {
-    app: {
-      minHeight: "100vh",
-      background: "#0D0D12",
-      color: "#EDE8DC",
-      fontFamily: "'Jost', sans-serif",
-      position: "relative",
-      overflow: "hidden",
-    },
-    noise: {
-      position: "fixed",
-      inset: 0,
-      opacity: 0.03,
-      backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-      pointerEvents: "none",
-      zIndex: 0,
-    },
-    orb1: {
-      position: "fixed",
-      width: 600,
-      height: 600,
-      borderRadius: "50%",
-      background: "radial-gradient(circle, rgba(212,165,116,0.06) 0%, transparent 70%)",
-      top: -200,
-      right: -200,
-      pointerEvents: "none",
-      zIndex: 0,
-    },
-    orb2: {
-      position: "fixed",
-      width: 500,
-      height: 500,
-      borderRadius: "50%",
-      background: "radial-gradient(circle, rgba(168,196,212,0.04) 0%, transparent 70%)",
-      bottom: -150,
-      left: -150,
-      pointerEvents: "none",
-      zIndex: 0,
-    },
-    content: {
-      position: "relative",
-      zIndex: 1,
-      maxWidth: 640,
-      margin: "0 auto",
-      padding: "40px 24px",
-    },
-    logo: {
-      textAlign: "center",
-      marginBottom: 48,
-    },
-    logoText: {
-      fontSize: 26,
-      letterSpacing: "0.12em",
-      color: "#E8C97A",
-      fontFamily: "'Cormorant Garamond', serif",
-      fontWeight: 500,
-      textDecoration: "none",
-    },
-    h1: {
-      fontSize: 42,
-      fontWeight: 300,
-      lineHeight: 1.15,
-      color: "#EDE8DC",
-      fontFamily: "'Cormorant Garamond', serif",
-      marginBottom: 20,
-      textAlign: "center",
-      letterSpacing: -0.5,
-    },
-    subtitle: {
-      fontSize: 16,
-      lineHeight: 1.85,
-      color: "#b8b0a0",
-      textAlign: "center",
-      maxWidth: 480,
-      margin: "0 auto 40px",
-      fontWeight: 300,
-    },
-    btn: {
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "16px 48px",
-      background: "transparent",
-      border: "1px solid rgba(201,168,76,0.5)",
-      color: "#C9A84C",
-      fontSize: 13,
-      fontFamily: "'Jost', sans-serif",
-      letterSpacing: 3,
-      textTransform: "uppercase",
-      cursor: "pointer",
-      transition: "all 0.4s ease",
-      fontWeight: 500,
-    },
-    btnHover: {
-      background: "rgba(201,168,76,0.08)",
-      borderColor: "#C9A84C",
-      boxShadow: "0 0 30px rgba(201,168,76,0.15)",
-    },
-    privacyNote: {
-      fontSize: 12,
-      color: "#8a8070",
-      textAlign: "center",
-      marginTop: 24,
-      letterSpacing: 1,
-    },
-    progressBar: {
-      height: 1,
-      background: "rgba(212,165,116,0.1)",
-      marginBottom: 48,
-      position: "relative",
-    },
-    progressFill: {
-      height: "100%",
-      background: "linear-gradient(90deg, rgba(212,165,116,0.2), #D4A574)",
-      transition: "width 0.5s ease",
-    },
-    categoryLabel: {
-      fontSize: 11,
-      letterSpacing: 4,
-      textTransform: "uppercase",
-      color: "#C9A84C",
-      fontFamily: "'Jost', sans-serif",
-      fontWeight: 400,
-      marginBottom: 12,
-    },
-    questionText: {
-      fontSize: 26,
-      fontWeight: 300,
-      lineHeight: 1.4,
-      color: "#EDE8DC",
-      fontFamily: "'Cormorant Garamond', serif",
-      marginBottom: 40,
-      minHeight: 80,
-    },
-    navRow: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginTop: 32,
-    },
-    backBtn: {
-      background: "none",
-      border: "none",
-      color: "#8a8070",
-      fontSize: 13,
-      fontFamily: "'Jost', sans-serif",
-      letterSpacing: 2,
-      cursor: "pointer",
-      padding: "8px 0",
-      textTransform: "uppercase",
-    },
-    nextBtn: {
-      padding: "12px 36px",
-      background: "transparent",
-      border: "1px solid rgba(201,168,76,0.5)",
-      color: "#C9A84C",
-      fontSize: 13,
-      fontFamily: "'Jost', sans-serif",
-      letterSpacing: 3,
-      textTransform: "uppercase",
-      cursor: "pointer",
-      transition: "all 0.3s ease",
-    },
+  const labelStyle = {
+    fontFamily: "'Cormorant Garamond', serif",
+    fontSize: "1.1rem",
+    fontWeight: 400,
+    color: "var(--text)",
+    marginBottom: 12,
+    display: "block",
   };
 
-  const [hoveredBtn, setHoveredBtn] = useState(null);
-
   return (
-    <div style={styles.app}>
-      <div style={styles.noise} />
-      <div style={styles.orb1} />
-      <div style={styles.orb2} />
+    <div className="ie-app">
+      <nav className={`ie-nav${scrolled ? " scrolled" : ""}`}>
+        <a href="#" className="nav-logo" onClick={(e) => { e.preventDefault(); resetAssessment(); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+          <HeliosWordmark />
+        </a>
+        <ThemeToggle theme={theme} onToggle={toggleTheme} />
+      </nav>
 
-      <div style={styles.content}>
-        <div style={styles.logo}>
-          <a href="#" style={styles.logoText} onClick={(e) => e.preventDefault()}>
-            HELI<span
-              style={{
-                color: "#F4A832",
-                fontSize: "1.25em",
-                lineHeight: 1,
-                verticalAlign: "top",
-                position: "relative",
-                top: "0.05em",
-                marginLeft: "-0.13em",
-                letterSpacing: "-0.07em",
-              }}
-            >☉</span>S
-          </a>
-        </div>
-
+      <div className="ie-content">
         {screen === "landing" && (
           <div style={{ opacity: fadeIn ? 1 : 0, transition: "opacity 0.8s ease", transitionDelay: "0.1s" }}>
-            <h1 style={styles.h1}>Life Diagnostic</h1>
-            <p style={styles.subtitle}>
+            <p className="ie-label" style={{ textAlign: "center", display: "block", marginBottom: 20 }}>
+              Life Diagnostic
+            </p>
+            <h1 className="ie-h1">
+              Where your energy is <em>flowing</em>
+            </h1>
+            <p className="ie-subtitle">
               A quiet exploration of where you are — and where you want to be.
               Answer honestly. There are no wrong answers. Your results are yours alone.
             </p>
             <div style={{ textAlign: "center" }}>
-              <button
-                style={{ ...styles.btn, ...(hoveredBtn === "start" ? styles.btnHover : {}) }}
-                onMouseEnter={() => setHoveredBtn("start")}
-                onMouseLeave={() => setHoveredBtn(null)}
-                onClick={() => setScreen("voice")}
-              >
+              <button className="ie-btn ie-btn--primary" onClick={() => setScreen("voice")}>
                 Begin
               </button>
             </div>
-            <p style={styles.privacyNote}>
+            <p className="ie-privacy-note">
               No account required · No personal information collected · Takes 3–5 minutes
             </p>
           </div>
@@ -712,40 +606,37 @@ export default function InsightEngine() {
 
         {screen === "assessment" && (
           <div style={{ opacity: fadeIn ? 1 : 0, transition: "opacity 0.5s ease", transitionDelay: "0.05s" }}>
-            <div style={styles.progressBar}>
-              <div style={{ ...styles.progressFill, width: `${(currentQuestionPosition / totalQuestions) * 100}%` }} />
+            <div className="ie-progress">
+              <div className="ie-progress__fill" style={{ width: `${(currentQuestionPosition / totalQuestions) * 100}%` }} />
             </div>
 
-            <div style={styles.categoryLabel}>
+            <div className="ie-label" style={{ marginBottom: 16 }}>
               {cat.icon} &nbsp;{cat.label}
             </div>
 
-            <div style={styles.questionText}>{questions[currentQuestion]}</div>
+            <div style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: "clamp(1.35rem, 3.2vw, 1.7rem)",
+              fontWeight: 300,
+              lineHeight: 1.35,
+              color: "var(--text)",
+              marginBottom: 40,
+              minHeight: 80,
+            }}>
+              {questions[currentQuestion]}
+            </div>
 
             <SliderInput value={currentValue} onChange={handleAnswer} />
 
-            <div style={styles.navRow}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 32 }}>
               <button
-                style={{
-                  ...styles.backBtn,
-                  visibility: currentCategory === 0 && currentQuestion === 0 ? "hidden" : "visible",
-                }}
+                className="ie-btn--text"
+                style={{ visibility: currentCategory === 0 && currentQuestion === 0 ? "hidden" : "visible" }}
                 onClick={goBack}
               >
                 ← Back
               </button>
-              <span />
-              <button
-                style={{
-                  ...styles.nextBtn,
-                  ...(hoveredBtn === "next"
-                    ? { background: "rgba(201,168,76,0.08)", borderColor: "#C9A84C" }
-                    : {}),
-                }}
-                onMouseEnter={() => setHoveredBtn("next")}
-                onMouseLeave={() => setHoveredBtn(null)}
-                onClick={goNext}
-              >
+              <button className="ie-btn ie-btn--small" onClick={goNext}>
                 {currentCategory === CATEGORIES.length - 1 && currentQuestion === questions.length - 1
                   ? "Continue →"
                   : "Next →"}
@@ -753,22 +644,7 @@ export default function InsightEngine() {
             </div>
 
             <div style={{ textAlign: "center", marginTop: 24 }}>
-              <button
-                onClick={resetAssessment}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#8a8070",
-                  fontSize: 11,
-                  fontFamily: "'Jost', sans-serif",
-                  letterSpacing: 2,
-                  cursor: "pointer",
-                  textTransform: "uppercase",
-                  transition: "color 0.3s",
-                }}
-                onMouseEnter={(e) => e.target.style.color = "#C9A84C"}
-                onMouseLeave={(e) => e.target.style.color = "#8a8070"}
-              >
+              <button className="ie-btn--text" onClick={resetAssessment}>
                 Start over
               </button>
             </div>
@@ -777,113 +653,51 @@ export default function InsightEngine() {
 
         {screen === "optional" && (
           <div style={{ opacity: fadeIn ? 1 : 0, transition: "opacity 0.8s ease", transitionDelay: "0.1s" }}>
-            <h1 style={{ ...styles.h1, fontSize: 32, marginBottom: 8 }}>One more thing</h1>
-            <p style={{ ...styles.subtitle, fontSize: 15, marginBottom: 8 }}>
+            <h1 className="ie-h1" style={{ marginBottom: 8 }}>One more <em>thing</em></h1>
+            <p className="ie-subtitle" style={{ marginBottom: 8 }}>
               These are optional — skip if you'd rather dive straight into your results.
             </p>
-            <p style={{ fontSize: 12, color: "#8a8070", textAlign: "center", marginBottom: 40, letterSpacing: 0.5 }}>
+            <p style={{ fontSize: 12, color: "var(--muted)", textAlign: "center", marginBottom: 40, letterSpacing: "0.05em" }}>
               Your responses are used to personalize your summary and are not stored.
             </p>
 
             <div style={{ marginBottom: 32 }}>
-              <label style={{
-                display: "block",
-                fontSize: 20,
-                fontWeight: 300,
-                color: "#EDE8DC",
-                fontFamily: "'Cormorant Garamond', serif",
-                marginBottom: 12,
-              }}>
+              <label style={labelStyle}>
                 What brought you here today?
               </label>
               <textarea
+                className="ie-textarea"
                 value={optionalResponses.intention}
                 onChange={(e) => setOptionalResponses((prev) => ({ ...prev, intention: e.target.value.slice(0, 300) }))}
                 placeholder="A transition, a feeling, curiosity — whatever it is"
                 rows={3}
-                style={{
-                  width: "100%",
-                  padding: "14px 16px",
-                  background: "rgba(13,13,18,0.8)",
-                  border: "1px solid rgba(201,168,76,0.2)",
-                  color: "#EDE8DC",
-                  fontSize: 15,
-                  fontFamily: "'Jost', sans-serif",
-                  fontWeight: 300,
-                  lineHeight: 1.6,
-                  resize: "vertical",
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
-                onFocus={(e) => e.target.style.borderColor = "rgba(201,168,76,0.5)"}
-                onBlur={(e) => e.target.style.borderColor = "rgba(201,168,76,0.2)"}
               />
-              <div style={{ textAlign: "right", fontSize: 11, color: "#8a8070", marginTop: 4 }}>
+              <div style={{ textAlign: "right", fontSize: 11, color: "var(--muted)", marginTop: 4 }}>
                 {optionalResponses.intention.length} / 300
               </div>
             </div>
 
             <div style={{ marginBottom: 40 }}>
-              <label style={{
-                display: "block",
-                fontSize: 20,
-                fontWeight: 300,
-                color: "#EDE8DC",
-                fontFamily: "'Cormorant Garamond', serif",
-                marginBottom: 12,
-              }}>
+              <label style={labelStyle}>
                 Is there anything you want to make sure this reflection captures?
               </label>
               <textarea
+                className="ie-textarea"
                 value={optionalResponses.context}
                 onChange={(e) => setOptionalResponses((prev) => ({ ...prev, context: e.target.value.slice(0, 300) }))}
                 placeholder="Optional — leave blank if nothing comes to mind"
                 rows={3}
-                style={{
-                  width: "100%",
-                  padding: "14px 16px",
-                  background: "rgba(13,13,18,0.8)",
-                  border: "1px solid rgba(201,168,76,0.2)",
-                  color: "#EDE8DC",
-                  fontSize: 15,
-                  fontFamily: "'Jost', sans-serif",
-                  fontWeight: 300,
-                  lineHeight: 1.6,
-                  resize: "vertical",
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
-                onFocus={(e) => e.target.style.borderColor = "rgba(201,168,76,0.5)"}
-                onBlur={(e) => e.target.style.borderColor = "rgba(201,168,76,0.2)"}
               />
-              <div style={{ textAlign: "right", fontSize: 11, color: "#8a8070", marginTop: 4 }}>
+              <div style={{ textAlign: "right", fontSize: 11, color: "var(--muted)", marginTop: 4 }}>
                 {optionalResponses.context.length} / 300
               </div>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "center", gap: 16 }}>
-              <button
-                style={{
-                  ...styles.backBtn,
-                  fontSize: 13,
-                  padding: "12px 24px",
-                }}
-                onClick={() => goToResults(optionalResponses)}
-              >
+            <div style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap" }}>
+              <button className="ie-btn--text" onClick={() => goToResults(optionalResponses)}>
                 Skip
               </button>
-              <button
-                style={{
-                  ...styles.nextBtn,
-                  padding: "12px 36px",
-                  ...(hoveredBtn === "optional-next"
-                    ? { background: "rgba(201,168,76,0.08)", borderColor: "#C9A84C" }
-                    : {}),
-                }}
-                onMouseEnter={() => setHoveredBtn("optional-next")}
-                onMouseLeave={() => setHoveredBtn(null)}
-                onClick={() => goToResults(optionalResponses)}
-              >
+              <button className="ie-btn ie-btn--small" onClick={() => goToResults(optionalResponses)}>
                 See Results →
               </button>
             </div>
@@ -892,13 +706,13 @@ export default function InsightEngine() {
 
         {screen === "results" && (
           <div style={{ opacity: fadeIn ? 1 : 0, transition: "opacity 0.6s ease", transitionDelay: "0.1s" }}>
-            <h1 style={{ ...styles.h1, fontSize: 34, marginBottom: 8 }}>Your Life Diagnostic</h1>
-            <p style={{ ...styles.subtitle, fontSize: 15, marginBottom: 12 }}>
+            <h1 className="ie-h1" style={{ marginBottom: 8 }}>Your Life <em>Diagnostic</em></h1>
+            <p className="ie-subtitle" style={{ marginBottom: 12 }}>
               Each shape represents a dimension of your life. Larger blooms are thriving. Smaller ones are asking for attention. The brighter the center, the more balanced your life feels.
             </p>
 
-            <div style={{ display: "flex", justifyContent: "center", marginTop: -60, marginBottom: -56 }}>
-              <AuraDaisy scores={scores} animate={showChart} />
+            <div style={{ display: "flex", justifyContent: "center", marginTop: -40, marginBottom: -40 }}>
+              <AuraDaisy scores={scores} animate={showChart} theme={theme} />
             </div>
 
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginBottom: 40 }}>
@@ -914,54 +728,35 @@ export default function InsightEngine() {
                   environment: [130, 190, 50],
                 };
                 const [r, g, b] = petalColors[c.id] || [212, 165, 116];
+                const bgA = theme === "light" ? 0.12 : 0.08;
                 return (
                   <div
                     key={c.id}
                     style={{
                       padding: "6px 14px",
                       borderRadius: 20,
-                      border: `1px solid rgba(${r},${g},${b},0.25)`,
-                      background: `rgba(${r},${g},${b},0.08)`,
+                      border: `1px solid rgba(${r},${g},${b},0.35)`,
+                      background: `rgba(${r},${g},${b},${bgA})`,
                       fontSize: 12,
                       color: `rgb(${r},${g},${b})`,
-                      letterSpacing: 0.5,
+                      letterSpacing: "0.04em",
+                      fontWeight: 500,
                     }}
                   >
-                    {c.label}: <strong style={{ color: `rgb(${r},${g},${b})` }}>{scores[c.id]}</strong>
+                    {c.label}: <strong>{scores[c.id]}</strong>
                   </div>
                 );
               })}
             </div>
 
             {showInsights && (
-              <div
-                style={{
-                  borderTop: "1px solid rgba(212,165,116,0.1)",
-                  paddingTop: 32,
-                  marginTop: 8,
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 11,
-                    letterSpacing: 4,
-                    textTransform: "uppercase",
-                    color: "#C9A84C",
-                    marginBottom: 20,
-                  }}
-                >
+              <div style={{ borderTop: "1px solid var(--border-subtle)", paddingTop: 32, marginTop: 8 }}>
+                <div className="ie-label" style={{ marginBottom: 20 }}>
                   Your Insights
                 </div>
-                <div
-                  style={{
-                    fontSize: 16,
-                    lineHeight: 1.85,
-                    color: "#EDE8DC",
-                    fontWeight: 400,
-                  }}
-                >
+                <div style={{ fontSize: "1rem", lineHeight: 1.85, color: "var(--text)", fontWeight: 400 }}>
                   {insightLoading ? (
-                    <p style={{ color: "#8a8070", fontStyle: "italic" }}>
+                    <p style={{ color: "var(--muted)", fontStyle: "italic" }}>
                       Reading your results…
                     </p>
                   ) : (
@@ -972,21 +767,11 @@ export default function InsightEngine() {
             )}
 
             {showCTA && !submitted && (
-              <div
-                style={{
-                  marginTop: 48,
-                  padding: 32,
-                  border: "1px solid rgba(212,165,116,0.15)",
-                  background: "rgba(212,165,116,0.03)",
-                  textAlign: "center",
-                  opacity: showCTA ? 1 : 0,
-                  transition: "opacity 0.8s ease",
-                }}
-              >
-                <div style={{ fontSize: 22, color: "#EDE8DC", marginBottom: 8, fontWeight: 300, fontFamily: "'Cormorant Garamond', serif" }}>
-                  Does this resonate with you?
+              <div className="ie-card" style={{ marginTop: 48, textAlign: "center" }}>
+                <div style={{ fontSize: "1.4rem", color: "var(--text)", marginBottom: 8, fontWeight: 300, fontFamily: "'Cormorant Garamond', serif" }}>
+                  Does this <em style={{ fontStyle: "italic", color: "var(--gold-light)" }}>resonate</em> with you?
                 </div>
-                <p style={{ fontSize: 14, color: "#b8b0a0", marginBottom: 24, fontWeight: 400 }}>
+                <p style={{ fontSize: 14, color: "var(--text-dim)", marginBottom: 24, fontWeight: 400, lineHeight: 1.7 }}>
                   If you'd like to explore what came up, we're here. Share your email and we'll connect you
                   with the right support — whether that's coaching, therapeutic guidance, or both.
                 </p>
@@ -1007,8 +792,9 @@ export default function InsightEngine() {
                     pointerEvents: "none",
                   }}
                 />
-                <div style={{ display: "flex", gap: 12, maxWidth: 400, margin: "0 auto" }}>
+                <div style={{ display: "flex", gap: 12, maxWidth: 400, margin: "0 auto", flexWrap: "wrap" }}>
                   <input
+                    className="ie-input"
                     type="email"
                     name="email"
                     id="email"
@@ -1016,29 +802,14 @@ export default function InsightEngine() {
                     placeholder="your@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    style={{
-                      flex: 1,
-                      padding: "12px 16px",
-                      background: "rgba(13,13,18,0.8)",
-                      border: "1px solid rgba(201,168,76,0.35)",
-                      color: "#EDE8DC",
-                      fontSize: 14,
-                      fontFamily: "'Jost', sans-serif",
-                      outline: "none",
-                    }}
+                    style={{ flex: "1 1 200px", padding: "12px 16px", fontSize: 14 }}
                   />
                   <button
+                    className="ie-btn ie-btn--primary ie-btn--small"
                     style={{
-                      ...styles.nextBtn,
-                      padding: "12px 24px",
                       opacity: (!consentChecked || submitting) ? 0.4 : 1,
                       pointerEvents: (!consentChecked || submitting) ? "none" : "auto",
-                      ...(hoveredBtn === "submit"
-                        ? { background: "rgba(201,168,76,0.08)", borderColor: "#C9A84C" }
-                        : {}),
                     }}
-                    onMouseEnter={() => setHoveredBtn("submit")}
-                    onMouseLeave={() => setHoveredBtn(null)}
                     onClick={handleOptIn}
                   >
                     {submitting ? "Sending..." : "Connect"}
@@ -1051,7 +822,7 @@ export default function InsightEngine() {
                   marginTop: 12,
                   cursor: "pointer",
                   fontSize: 12,
-                  color: "rgba(212,165,116,0.4)",
+                  color: "var(--muted)",
                   lineHeight: 1.5,
                   maxWidth: 400,
                   margin: "12px auto 0",
@@ -1063,14 +834,14 @@ export default function InsightEngine() {
                     name="consent"
                     checked={consentChecked}
                     onChange={(e) => setConsentChecked(e.target.checked)}
-                    style={{ marginTop: 2, accentColor: "#D4A574" }}
+                    style={{ marginTop: 2, accentColor: "var(--gold)" }}
                   />
                   I consent to sharing my email and assessment results with the Helios team for the purpose of scheduling a consultation.
                 </label>
                 {submitError && (
                   <p style={{
                     fontSize: 13,
-                    color: "#E24B4A",
+                    color: "var(--error)",
                     textAlign: "center",
                     marginTop: 12,
                   }}>
@@ -1081,57 +852,27 @@ export default function InsightEngine() {
             )}
 
             {submitted && (
-              <div
-                style={{
-                  marginTop: 48,
-                  padding: 40,
-                  border: "1px solid rgba(212,165,116,0.2)",
-                  background: "rgba(212,165,116,0.04)",
-                  textAlign: "center",
-                }}
-              >
-                <div style={{ fontSize: 28, color: "#E8C97A", marginBottom: 8, fontWeight: 300, fontFamily: "'Cormorant Garamond', serif" }}>
+              <div className="ie-card" style={{ marginTop: 48, padding: 40, textAlign: "center" }}>
+                <div style={{ fontSize: "1.8rem", color: "var(--gold-light)", marginBottom: 8, fontWeight: 300, fontFamily: "'Cormorant Garamond', serif" }}>
                   Thank you
                 </div>
-                <p style={{ fontSize: 15, color: "#b8b0a0", marginBottom: 24, fontWeight: 400 }}>
+                <p style={{ fontSize: 15, color: "var(--text-dim)", marginBottom: 24, fontWeight: 400, lineHeight: 1.7 }}>
                   We've received your assessment. A member of our team will reach out within 24 hours to schedule a complimentary consultation.
                 </p>
                 <button
-                  style={{
-                    ...styles.btn,
-                    fontSize: 13,
-                    padding: "14px 36px",
-                    ...(hoveredBtn === "book" ? styles.btnHover : {}),
-                  }}
-                  onMouseEnter={() => setHoveredBtn("book")}
-                  onMouseLeave={() => setHoveredBtn(null)}
+                  className="ie-btn"
                   onClick={() => window.open("https://calendly.com/nicholastucker/30min", "_blank")}
                 >
                   Book Now
                 </button>
-                <p style={{ fontSize: 11, color: "#8a8070", marginTop: 16, letterSpacing: 0.5 }}>
+                <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 16, letterSpacing: "0.08em" }}>
                   Or schedule at your convenience
                 </p>
               </div>
             )}
 
             <div style={{ textAlign: "center", marginTop: 48, paddingBottom: 40 }}>
-              <button
-                onClick={resetAssessment}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#8a8070",
-                  fontSize: 13,
-                  fontFamily: "'Jost', sans-serif",
-                  letterSpacing: 2,
-                  cursor: "pointer",
-                  textTransform: "uppercase",
-                  transition: "color 0.3s",
-                }}
-                onMouseEnter={(e) => e.target.style.color = "#C9A84C"}
-                onMouseLeave={(e) => e.target.style.color = "#8a8070"}
-              >
+              <button className="ie-btn--text" onClick={resetAssessment}>
                 ← Retake Assessment
               </button>
             </div>

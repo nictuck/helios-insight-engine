@@ -2,19 +2,22 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- FOUC prevention: set theme before first paint -->
+    <script>(function(){try{var t=localStorage.getItem('helios-theme')||'light';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})()</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Life Diagnostic | Helios</title>
     <meta name="description" content="Discover where your energy is flowing — and where it's asking for attention. A free, private life assessment from Helios Integrative Health." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#FAF8F3" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#08090F" media="(prefers-color-scheme: dark)" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Life Diagnostic | Helios" />
     <meta property="og:description" content="A quiet exploration of where you are — and where you want to be. A free, private life assessment from Helios Integrative Health." />
@@ -24,7 +27,9 @@
     <meta name="twitter:description" content="A free, private life assessment from Helios Integrative Health." />
   </head>
   <body>
+    <canvas id="helios-nebula" aria-hidden="true"></canvas>
     <div id="root"></div>
+    <script src="/nebula.js"></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

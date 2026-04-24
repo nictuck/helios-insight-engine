@@ -12,12 +12,14 @@ const CATEGORIES = [
   { id: "environment", label: "Environment", color: [130, 190, 50] },
 ];
 
-export default function AuraDaisy({ scores, animate }) {
+export default function AuraDaisy({ scores, animate, theme = "dark" }) {
   const canvasRef = useRef(null);
   const animRef = useRef(null);
   const timeRef = useRef(0);
   const progressRef = useRef(0);
   const silhouetteRef = useRef(null);
+  const themeRef = useRef(theme);
+  useEffect(() => { themeRef.current = theme; }, [theme]);
 
   // Load silhouette image once
   useEffect(() => {
@@ -109,10 +111,11 @@ export default function AuraDaisy({ scores, animate }) {
 
       // Draw silhouette behind petals
       const sImg = silhouetteRef.current;
+      const isLight = themeRef.current === "light";
       if (sImg) {
         const pulse = 0.5 + 0.5 * Math.sin(time * 0.8);
-        const baseA = 0.15 + pulse * 0.02;
-        const r = 212, g = 165, b = 116;
+        const baseA = (isLight ? 0.26 : 0.15) + pulse * (isLight ? 0.04 : 0.02);
+        const [r, g, b] = isLight ? [154, 111, 32] : [212, 165, 116];
 
         // Size the silhouette to fill most of the canvas
         const imgAspect = sImg.width / sImg.height;
@@ -252,9 +255,12 @@ export default function AuraDaisy({ scores, animate }) {
         const lr = cR + layer * 14;
         const grad = ctx.createRadialGradient(CX, CY, 0, CX, CY, lr);
         const a = (0.03 + balance * 0.07) * (1 - layer * 0.2) * progress;
-        grad.addColorStop(0, `rgba(255,240,210,${a * 2.8})`);
-        grad.addColorStop(0.5, `rgba(255,220,170,${a * 1.3})`);
-        grad.addColorStop(1, `rgba(255,200,140,0)`);
+        const core = isLight
+          ? { inner: "244,168,50", mid: "230,150,40", outer: "210,130,30" }
+          : { inner: "255,240,210", mid: "255,220,170", outer: "255,200,140" };
+        grad.addColorStop(0, `rgba(${core.inner},${a * (isLight ? 2.2 : 2.8)})`);
+        grad.addColorStop(0.5, `rgba(${core.mid},${a * (isLight ? 1.1 : 1.3)})`);
+        grad.addColorStop(1, `rgba(${core.outer},0)`);
         ctx.beginPath();
         ctx.arc(CX, CY, lr, 0, Math.PI * 2);
         ctx.fillStyle = grad;
@@ -269,9 +275,10 @@ export default function AuraDaisy({ scores, animate }) {
           const sr = cR * 0.55 + Math.sin(time * 1.8 + s * 1.5) * 5;
           const sx = CX + Math.cos(sa) * sr;
           const sy = CY + Math.sin(sa) * sr;
+          const sparkRGB = isLight ? "244,168,50" : "255,245,210";
           const sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, 3.5);
-          sg.addColorStop(0, `rgba(255,245,210,${sparkAlpha * 0.55})`);
-          sg.addColorStop(1, `rgba(255,245,210,0)`);
+          sg.addColorStop(0, `rgba(${sparkRGB},${sparkAlpha * 0.55})`);
+          sg.addColorStop(1, `rgba(${sparkRGB},0)`);
           ctx.beginPath();
           ctx.arc(sx, sy, 3.5, 0, Math.PI * 2);
           ctx.fillStyle = sg;
