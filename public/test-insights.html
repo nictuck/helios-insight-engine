@@ -249,9 +249,40 @@ document.querySelectorAll('input[data-type="elapsedSeconds"], input[data-type="s
 document.querySelectorAll('input[data-type="revisited"], input[data-type="scoreChanged"]').forEach(el => {
   el.addEventListener('change', () => {
     state[el.dataset.id][el.dataset.type] = el.checked;
+    syncRevisitDependents(el.dataset.id);
     updatePayload();
   });
 });
+
+// Mirror production logic: scoreChanged is only meaningful when revisited
+// is true (the engine forces scoreChanged=false without a revisit), and
+// originalScore is only meaningful when scoreChanged is true. Disable the
+// dependent inputs and clear their state when the parent signal is false.
+function syncRevisitDependents(catId) {
+  const s = state[catId];
+  const scoreChangedEl = document.querySelector(`input[data-type="scoreChanged"][data-id="${catId}"]`);
+  const originalScoreEl = document.querySelector(`input[data-type="originalScore"][data-id="${catId}"]`);
+
+  if (!s.revisited) {
+    s.scoreChanged = false;
+    scoreChangedEl.checked = false;
+    scoreChangedEl.disabled = true;
+  } else {
+    scoreChangedEl.disabled = false;
+  }
+
+  if (!s.scoreChanged) {
+    // No change → original equals current score
+    s.originalScore = s.score;
+    originalScoreEl.value = s.score;
+    originalScoreEl.disabled = true;
+  } else {
+    originalScoreEl.disabled = false;
+  }
+}
+
+// Initial sync for all categories
+CATEGORIES.forEach(cat => syncRevisitDependents(cat.id));
 
 // Event: expand behavioral panels
 document.querySelectorAll('.expand-btn').forEach(btn => {
@@ -363,6 +394,8 @@ document.getElementById('randomizeBtn').addEventListener('click', () => {
     document.querySelector(`input[data-type="revisited"][data-id="${cat.id}"]`).checked = revisited;
     document.querySelector(`input[data-type="scoreChanged"][data-id="${cat.id}"]`).checked = scoreChanged;
     document.querySelector(`input[data-type="originalScore"][data-id="${cat.id}"]`).value = originalScore;
+
+    syncRevisitDependents(cat.id);
   });
 
   // Total duration: sum of per-category elapsed + 10–30s buffer for transitions
