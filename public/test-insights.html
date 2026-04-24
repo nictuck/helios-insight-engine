@@ -288,15 +288,87 @@ document.querySelectorAll('.expand-btn').forEach(btn => {
 });
 document.getElementById('personality').addEventListener('change', updatePayload);
 
-// Randomize
+// Randomize — realistic score + behavioral values
+// Models a plausible assessment: per-category elapsed time skewed around
+// 15–40s, slider changes mostly 0–4, revisits uncommon (~15%), and when
+// a revisit happens ~60% of the time the score actually moved. Total
+// duration is the sum of per-category time plus a small buffer for
+// transitions and optional responses.
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+// Triangular-ish: two uniforms averaged, biased toward the middle.
+function randTriangular(min, mode, max) {
+  const a = Math.random();
+  const b = Math.random();
+  const t = (a + b) / 2; // [0,1], mean 0.5
+  // Map t around mode: below mode scale into [min, mode], above into [mode, max]
+  return t < 0.5
+    ? min + (mode - min) * (t * 2)
+    : mode + (max - mode) * ((t - 0.5) * 2);
+}
+function roundHalf(n) {
+  return Math.max(0, Math.min(10, Math.round(n * 2) / 2));
+}
+
 document.getElementById('randomizeBtn').addEventListener('click', () => {
+  let totalElapsed = 0;
+
   CATEGORIES.forEach(cat => {
-    const score = Math.round((Math.random() * 10) * 2) / 2;
-    state[cat.id].score = score;
+    const s = state[cat.id];
+
+    // Score: uniform 0–10 in 0.5 steps (keeps profile shapes varied)
+    const score = roundHalf(Math.random() * 10);
+
+    // Elapsed seconds: triangular around ~22s, bounded [5, 75]
+    const elapsedSeconds = Math.round(randTriangular(5, 22, 75));
+
+    // Slider changes: heavily skewed low. ~25% get 0, rest triangular 1..8.
+    const sliderChanges = Math.random() < 0.25
+      ? 0
+      : Math.round(randTriangular(1, 3, 8));
+
+    // Revisit: ~15% of categories
+    const revisited = Math.random() < 0.15;
+
+    // If revisited, ~60% actually changed their score
+    const scoreChanged = revisited && Math.random() < 0.6;
+
+    // Original score when changed: current ± 1..3, rounded to 0.5, clamped
+    let originalScore = score;
+    if (scoreChanged) {
+      const delta = (0.5 + Math.random() * 2.5) * (Math.random() < 0.5 ? -1 : 1);
+      originalScore = roundHalf(score + delta);
+      // If clamping landed us back on the same value, nudge it
+      if (originalScore === score) {
+        originalScore = roundHalf(score + (score >= 5 ? -1 : 1));
+      }
+    }
+
+    s.score = score;
+    s.elapsedSeconds = elapsedSeconds;
+    s.sliderChanges = sliderChanges;
+    s.revisited = revisited;
+    s.scoreChanged = scoreChanged;
+    s.originalScore = originalScore;
+
+    totalElapsed += elapsedSeconds;
+
+    // Reflect into DOM
     const slider = document.querySelector(`input[data-type="score"][data-id="${cat.id}"]`);
     slider.value = score;
     document.querySelector(`.score-display[data-id="${cat.id}"]`).textContent = score;
+    document.querySelector(`input[data-type="elapsedSeconds"][data-id="${cat.id}"]`).value = elapsedSeconds;
+    document.querySelector(`input[data-type="sliderChanges"][data-id="${cat.id}"]`).value = sliderChanges;
+    document.querySelector(`input[data-type="revisited"][data-id="${cat.id}"]`).checked = revisited;
+    document.querySelector(`input[data-type="scoreChanged"][data-id="${cat.id}"]`).checked = scoreChanged;
+    document.querySelector(`input[data-type="originalScore"][data-id="${cat.id}"]`).value = originalScore;
   });
+
+  // Total duration: sum of per-category elapsed + 10–30s buffer for transitions
+  const totalDuration = totalElapsed + randInt(10, 30);
+  document.getElementById('totalDuration').value = totalDuration;
+
   updatePayload();
 });
 
