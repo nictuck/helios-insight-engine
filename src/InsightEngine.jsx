@@ -9,7 +9,7 @@ const CATEGORIES = [
   { id: "finance", label: "Financial Health", icon: "△" },
   { id: "growth", label: "Personal Growth", icon: "☆" },
   { id: "joy", label: "Joy & Recreation", icon: "◎" },
-  { id: "family", label: "Family & Community", icon: "⬡" },
+  { id: "belonging", label: "Belonging", icon: "⬡" },
   { id: "environment", label: "Physical Environment", icon: "□" },
 ];
 
@@ -38,8 +38,8 @@ const QUESTIONS = {
     "How often do you experience genuine fun, play, or creative expression?",
     "How well do you balance responsibility with things that light you up?",
   ],
-  family: [
-    "How strong and nourishing are your family and community connections?",
+  belonging: [
+    "How nourishing are your closest non-romantic connections — family, friends, or chosen community?",
     "How much do you feel you belong to something larger than yourself?",
   ],
   environment: [
@@ -335,7 +335,7 @@ export default function InsightEngine() {
     if (new URLSearchParams(window.location.search).has("preview")) {
       const previewScores = {
         career: 5, relationships: 7, health: 3, finance: 8,
-        growth: 6, joy: 9, family: 4, environment: 7,
+        growth: 6, joy: 9, belonging: 4, environment: 7,
       };
       setScores(previewScores);
       setScreen("results");
@@ -724,7 +724,7 @@ export default function InsightEngine() {
                   finance: [195, 165, 55],
                   growth: [150, 85, 210],
                   joy: [215, 65, 115],
-                  family: [40, 190, 185],
+                  belonging: [40, 190, 185],
                   environment: [130, 190, 50],
                 };
                 const [r, g, b] = petalColors[c.id] || [212, 165, 116];

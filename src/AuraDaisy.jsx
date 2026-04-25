@@ -8,7 +8,7 @@ const CATEGORIES = [
   { id: "finance", label: "Finance", color: [195, 165, 55] },
   { id: "growth", label: "Growth", color: [150, 85, 210] },
   { id: "joy", label: "Joy", color: [215, 65, 115] },
-  { id: "family", label: "Family", color: [40, 190, 185] },
+  { id: "belonging", label: "Belonging", color: [40, 190, 185] },
   { id: "environment", label: "Environment", color: [130, 190, 50] },
 ];
 

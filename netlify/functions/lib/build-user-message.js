@@ -10,7 +10,7 @@ export const CATEGORIES = [
   { id: "finance", label: "Financial Health" },
   { id: "growth", label: "Personal Growth" },
   { id: "joy", label: "Joy & Recreation" },
-  { id: "family", label: "Family & Community" },
+  { id: "belonging", label: "Belonging" },
   { id: "environment", label: "Physical Environment" },
 ];
 
