@@ -1,5 +1,86 @@
 import { useState, useEffect } from "react";
 
+/* ------------------------------------------------------------------
+ * Topographic contour generator for the Terrain tile visual.
+ *
+ * Each peak is rendered as a stack of nested closed curves. Each curve
+ * is a smooth cubic-Bezier-through-jittered-points path so the rings
+ * look hand-drawn rather than mechanically circular.
+ * ------------------------------------------------------------------ */
+
+// Deterministic LCG so renders are stable
+function seededRandom(seed) {
+  let s = seed % 2147483647;
+  if (s <= 0) s += 2147483646;
+  return () => {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+function organicContour(cx, cy, rx, ry, rotationRad, seed, pointCount = 16, jitter = 0.1) {
+  const rand = seededRandom(seed);
+  const cos = Math.cos(rotationRad);
+  const sin = Math.sin(rotationRad);
+  const pts = [];
+  for (let i = 0; i < pointCount; i++) {
+    const theta = (Math.PI * 2 * i) / pointCount;
+    const j = 1 + (rand() - 0.5) * 2 * jitter;
+    const lx = Math.cos(theta) * rx * j;
+    const ly = Math.sin(theta) * ry * j;
+    pts.push({
+      x: cx + cos * lx - sin * ly,
+      y: cy + sin * lx + cos * ly,
+    });
+  }
+  // Catmull-Rom-to-Bezier closed path
+  const n = pts.length;
+  let d = `M ${pts[0].x.toFixed(2)} ${pts[0].y.toFixed(2)}`;
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i - 1 + n) % n];
+    const p1 = pts[i];
+    const p2 = pts[(i + 1) % n];
+    const p3 = pts[(i + 2) % n];
+    const c1x = p1.x + (p2.x - p0.x) / 6;
+    const c1y = p1.y + (p2.y - p0.y) / 6;
+    const c2x = p2.x - (p3.x - p1.x) / 6;
+    const c2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)} ${c2x.toFixed(2)} ${c2y.toFixed(2)} ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
+  }
+  return d + " Z";
+}
+
+// Build a stack of contour rings for a single peak
+function buildPeak({ cx, cy, rx, ry, rotation, seed, rings, summitFraction = 0.08 }) {
+  const out = [];
+  for (let i = 0; i < rings; i++) {
+    const t = rings === 1 ? 0 : i / (rings - 1); // 0 = outermost, 1 = innermost
+    const scale = 1 - t * (1 - summitFraction);
+    const jitter = 0.06 + (1 - t) * 0.07;
+    const ringSeed = seed + i * 173;
+    const points = 16 + ((seed + i) % 3);
+    out.push({
+      d: organicContour(cx, cy, rx * scale, ry * scale, rotation, ringSeed, points, jitter),
+      depth: t,
+      // Index contours every 3 rings get a slightly heavier stroke
+      isIndex: (rings - 1 - i) % 3 === 0,
+    });
+  }
+  return out;
+}
+
+// Pre-compute the topographic field once at module load
+const TOPO_CONTOURS = [
+  // Main summit, upper-left quadrant
+  ...buildPeak({ cx: 92, cy: 78, rx: 96, ry: 72, rotation: -0.18, seed: 1031, rings: 9 }),
+  // Secondary summit, lower-right
+  ...buildPeak({ cx: 218, cy: 142, rx: 70, ry: 50, rotation: 0.42, seed: 7727, rings: 7 }),
+  // Small ridge bump, upper-right
+  ...buildPeak({ cx: 245, cy: 52, rx: 28, ry: 22, rotation: 0.65, seed: 4421, rings: 4 }),
+  // Tiny crag, lower-left edge
+  ...buildPeak({ cx: 36, cy: 172, rx: 22, ry: 17, rotation: -0.05, seed: 9133, rings: 3 }),
+];
+
 /**
  * Voice selection screen — appears between landing and assessment.
  * Users pick between Terrain (grounded-coach) and Horizon (systems-observer).
@@ -117,31 +198,19 @@ export default function VoiceSelection({ value, onChange, onContinue, onSkip, fa
     terrainVisual: {
       width: "100%",
       height: "100%",
-      // Stacked radial gradients build receding hill silhouettes
-      // over a warm sunset sky. Drawn back-to-front: sky first,
-      // then haze, then hills from distant to nearest (CSS paints
-      // earlier layers on top of later ones in the comma list).
-      background: [
-        // Nearest hill (darkest, low and wide)
-        "radial-gradient(ellipse 95% 55% at 50% 118%, #2E1A0E 0%, #2E1A0E 49%, transparent 50%)",
-        // Mid hill (sienna, off-center right)
-        "radial-gradient(ellipse 75% 45% at 78% 102%, #5C3820 0%, #5C3820 49%, transparent 50%)",
-        // Inner ridge (umber, off-center left)
-        "radial-gradient(ellipse 65% 38% at 22% 95%, #8B5A2E 0%, #8B5A2E 49%, transparent 50%)",
-        // Distant ridge (ochre haze)
-        "radial-gradient(ellipse 80% 26% at 55% 88%, #B8803E 0%, #B8803E 49%, transparent 50%)",
-        // Sky
-        "linear-gradient(180deg, #F4D89A 0%, #EBA968 32%, #D87A3A 58%, #8E3F1E 85%, #3A1A0E 100%)",
-      ].join(", "),
+      background:
+        "radial-gradient(ellipse 110% 80% at 35% 40%, #4A2C16 0%, #2E1A0C 60%, #150A04 100%)",
       position: "relative",
+      overflow: "hidden",
     },
     terrainGlow: {
-      // Soft sunset sun haloing the back ridge
+      // Soft warm light pooling near the main summit
       position: "absolute",
       inset: 0,
       background:
-        "radial-gradient(circle at 55% 84%, rgba(255,225,160,0.55) 0%, rgba(255,200,120,0.18) 18%, transparent 36%)",
+        "radial-gradient(circle at 35% 38%, rgba(255,205,130,0.18) 0%, transparent 45%)",
       mixBlendMode: "screen",
+      pointerEvents: "none",
     },
     horizonVisual: {
       width: "100%",
@@ -233,6 +302,23 @@ export default function VoiceSelection({ value, onChange, onContinue, onSkip, fa
               <div style={styles.visual} aria-hidden="true">
                 {v.id === "grounded-coach" ? (
                   <div style={styles.terrainVisual}>
+                    <svg
+                      viewBox="0 0 300 200"
+                      preserveAspectRatio="xMidYMid slice"
+                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+                      aria-hidden="true"
+                    >
+                      <g fill="none" stroke="#D9A058" strokeLinejoin="round" strokeLinecap="round">
+                        {TOPO_CONTOURS.map((c, i) => (
+                          <path
+                            key={i}
+                            d={c.d}
+                            strokeWidth={c.isIndex ? 0.95 : 0.55}
+                            opacity={(0.22 + c.depth * 0.55) * (c.isIndex ? 1.15 : 1)}
+                          />
+                        ))}
+                      </g>
+                    </svg>
                     <div style={styles.terrainGlow} />
                   </div>
                 ) : (
