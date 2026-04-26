@@ -3,83 +3,199 @@ import { useState, useEffect } from "react";
 /* ------------------------------------------------------------------
  * Topographic contour generator for the Terrain tile visual.
  *
- * Each peak is rendered as a stack of nested closed curves. Each curve
- * is a smooth cubic-Bezier-through-jittered-points path so the rings
- * look hand-drawn rather than mechanically circular.
+ * Defines a synthetic elevation field (sum of 2D Gaussians forming
+ * peaks and a soft ridge connector), samples it on a regular grid,
+ * and runs marching squares at evenly-spaced threshold values to
+ * extract real isolines. The result is a proper contour map that
+ * obeys topographic conventions: lines never cross, closed loops
+ * surround peaks, lines bunch where the gradient is steep.
  * ------------------------------------------------------------------ */
 
-// Deterministic LCG so renders are stable
-function seededRandom(seed) {
-  let s = seed % 2147483647;
-  if (s <= 0) s += 2147483646;
-  return () => {
-    s = (s * 16807) % 2147483647;
-    return (s - 1) / 2147483646;
-  };
-}
-
-function organicContour(cx, cy, rx, ry, rotationRad, seed, pointCount = 16, jitter = 0.1) {
-  const rand = seededRandom(seed);
-  const cos = Math.cos(rotationRad);
-  const sin = Math.sin(rotationRad);
-  const pts = [];
-  for (let i = 0; i < pointCount; i++) {
-    const theta = (Math.PI * 2 * i) / pointCount;
-    const j = 1 + (rand() - 0.5) * 2 * jitter;
-    const lx = Math.cos(theta) * rx * j;
-    const ly = Math.sin(theta) * ry * j;
-    pts.push({
-      x: cx + cos * lx - sin * ly,
-      y: cy + sin * lx + cos * ly,
-    });
-  }
-  // Catmull-Rom-to-Bezier closed path
-  const n = pts.length;
-  let d = `M ${pts[0].x.toFixed(2)} ${pts[0].y.toFixed(2)}`;
-  for (let i = 0; i < n; i++) {
-    const p0 = pts[(i - 1 + n) % n];
-    const p1 = pts[i];
-    const p2 = pts[(i + 1) % n];
-    const p3 = pts[(i + 2) % n];
+// Catmull-Rom-to-Bezier — smooth path through ordered points
+function smoothPath(points, closed) {
+  if (points.length < 2) return "";
+  const n = points.length;
+  let d = `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`;
+  const segments = closed ? n : n - 1;
+  for (let i = 0; i < segments; i++) {
+    const p0 = points[closed ? (i - 1 + n) % n : Math.max(0, i - 1)];
+    const p1 = points[i];
+    const p2 = points[closed ? (i + 1) % n : i + 1];
+    const p3 = points[closed ? (i + 2) % n : Math.min(n - 1, i + 2)];
     const c1x = p1.x + (p2.x - p0.x) / 6;
     const c1y = p1.y + (p2.y - p0.y) / 6;
     const c2x = p2.x - (p3.x - p1.x) / 6;
     const c2y = p2.y - (p3.y - p1.y) / 6;
     d += ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)} ${c2x.toFixed(2)} ${c2y.toFixed(2)} ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
   }
-  return d + " Z";
+  return d + (closed ? " Z" : "");
 }
 
-// Build a stack of contour rings for a single peak
-function buildPeak({ cx, cy, rx, ry, rotation, seed, rings, summitFraction = 0.08 }) {
+// Anisotropic 2D Gaussian
+function gauss(x, y, cx, cy, sx, sy, amp) {
+  const dx = (x - cx) / sx;
+  const dy = (y - cy) / sy;
+  return amp * Math.exp(-0.5 * (dx * dx + dy * dy));
+}
+
+// Elevation field over the 300×200 viewBox.
+// Three principal peaks roughly arranged along a lower-left → upper-right
+// ridge, plus a soft Gaussian "ridge backbone" connecting them, plus
+// a small foothill on the lower-left edge for variety.
+function elevation(x, y) {
+  return (
+    // Main summit (largest, slightly off-center)
+    gauss(x, y, 175, 92, 30, 34, 9.6) +
+    // Secondary summit, lower-right of main
+    gauss(x, y, 232, 138, 26, 24, 6.5) +
+    // Far ridge bump, upper-right
+    gauss(x, y, 262, 50, 18, 18, 4.2) +
+    // Foothill, lower-left
+    gauss(x, y, 70, 162, 24, 22, 3.4) +
+    // Small saddle ridge, between the two main peaks
+    gauss(x, y, 205, 118, 14, 12, 2.0) +
+    // Soft ridge backbone along diagonal (lower-left → upper-right)
+    2.4 * Math.exp(-Math.pow((0.46 * x + 0.52 * y - 122) / 26, 2) / 2) -
+    0.6 // baseline so outer contours appear
+  );
+}
+
+// Marching squares over the precomputed FIELD at a given threshold.
+// Returns an array of polylines (each polyline is an array of {x, y}
+// in grid-cell coordinates).
+function marchingSquares(field, threshold, w, h) {
+  const segsByKey = new Map();
+  const allSegs = [];
+  const fmt = (p) => `${p.x.toFixed(5)},${p.y.toFixed(5)}`;
+
+  function addSeg(a, b) {
+    const seg = { a, b, used: false };
+    allSegs.push(seg);
+    const ka = fmt(a), kb = fmt(b);
+    if (!segsByKey.has(ka)) segsByKey.set(ka, []);
+    if (!segsByKey.has(kb)) segsByKey.set(kb, []);
+    segsByKey.get(ka).push(seg);
+    segsByKey.get(kb).push(seg);
+  }
+
+  for (let j = 0; j < h; j++) {
+    for (let i = 0; i < w; i++) {
+      const v0 = field[j][i];           // top-left
+      const v1 = field[j][i + 1];       // top-right
+      const v2 = field[j + 1][i + 1];   // bottom-right
+      const v3 = field[j + 1][i];       // bottom-left
+      const idx =
+        ((v0 >= threshold) ? 8 : 0) |
+        ((v1 >= threshold) ? 4 : 0) |
+        ((v2 >= threshold) ? 2 : 0) |
+        ((v3 >= threshold) ? 1 : 0);
+      if (idx === 0 || idx === 15) continue;
+
+      // Linear-interpolate edge crossings
+      const T = { x: i + (threshold - v0) / (v1 - v0), y: j };
+      const R = { x: i + 1, y: j + (threshold - v1) / (v2 - v1) };
+      const B = { x: i + (threshold - v3) / (v2 - v3), y: j + 1 };
+      const L = { x: i, y: j + (threshold - v0) / (v3 - v0) };
+
+      switch (idx) {
+        case 1: case 14: addSeg(L, B); break;
+        case 2: case 13: addSeg(B, R); break;
+        case 3: case 12: addSeg(L, R); break;
+        case 4: case 11: addSeg(T, R); break;
+        case 5: addSeg(L, T); addSeg(B, R); break;
+        case 6: case 9:  addSeg(T, B); break;
+        case 7: case 8:  addSeg(L, T); break;
+        case 10: addSeg(T, R); addSeg(L, B); break;
+        default: break;
+      }
+    }
+  }
+
+  // Chain shared-endpoint segments into long polylines
+  const polylines = [];
+  for (const seed of allSegs) {
+    if (seed.used) continue;
+    seed.used = true;
+    const line = [seed.a, seed.b];
+
+    // Extend forward from current tail
+    while (true) {
+      const tail = line[line.length - 1];
+      const candidates = segsByKey.get(fmt(tail)) || [];
+      const next = candidates.find((s) => !s.used);
+      if (!next) break;
+      next.used = true;
+      const other = (Math.abs(next.a.x - tail.x) < 1e-7 && Math.abs(next.a.y - tail.y) < 1e-7) ? next.b : next.a;
+      line.push(other);
+    }
+    // Extend backward from current head
+    while (true) {
+      const head = line[0];
+      const candidates = segsByKey.get(fmt(head)) || [];
+      const next = candidates.find((s) => !s.used);
+      if (!next) break;
+      next.used = true;
+      const other = (Math.abs(next.a.x - head.x) < 1e-7 && Math.abs(next.a.y - head.y) < 1e-7) ? next.b : next.a;
+      line.unshift(other);
+    }
+
+    polylines.push(line);
+  }
+  return polylines;
+}
+
+function buildContourField() {
+  const VB_W = 300, VB_H = 200;
+  const GRID_W = 150, GRID_H = 100;
+  const CELL_X = VB_W / GRID_W;
+  const CELL_Y = VB_H / GRID_H;
+
+  // Sample the elevation function on a (GRID_W+1) × (GRID_H+1) lattice
+  const field = [];
+  let minV = Infinity, maxV = -Infinity;
+  for (let j = 0; j <= GRID_H; j++) {
+    const row = new Float32Array(GRID_W + 1);
+    for (let i = 0; i <= GRID_W; i++) {
+      const v = elevation(i * CELL_X, j * CELL_Y);
+      row[i] = v;
+      if (v < minV) minV = v;
+      if (v > maxV) maxV = v;
+    }
+    field.push(row);
+  }
+
+  // Choose contour interval — roughly 18 levels across the value range
+  const STEP = 0.6;
   const out = [];
-  for (let i = 0; i < rings; i++) {
-    const t = rings === 1 ? 0 : i / (rings - 1); // 0 = outermost, 1 = innermost
-    const scale = 1 - t * (1 - summitFraction);
-    const jitter = 0.06 + (1 - t) * 0.07;
-    const ringSeed = seed + i * 173;
-    const points = 16 + ((seed + i) % 3);
-    out.push({
-      d: organicContour(cx, cy, rx * scale, ry * scale, rotation, ringSeed, points, jitter),
-      depth: t,
-      // Index contours every 3 rings get a slightly heavier stroke
-      isIndex: (rings - 1 - i) % 3 === 0,
-    });
+  // Index every 4th level
+  const startLevel = Math.ceil(minV / STEP) * STEP;
+  let levelIdx = 0;
+  for (let v = startLevel; v <= maxV; v += STEP) {
+    const polylines = marchingSquares(field, v, GRID_W, GRID_H);
+    const isIndex = levelIdx % 4 === 0;
+    for (const line of polylines) {
+      if (line.length < 3) continue; // skip tiny scraps
+      // Detect closure
+      const head = line[0];
+      const tail = line[line.length - 1];
+      const closed = Math.abs(head.x - tail.x) < 1e-6 && Math.abs(head.y - tail.y) < 1e-6;
+      // Map grid coords → viewBox coords
+      const pts = (closed ? line.slice(0, -1) : line).map((p) => ({
+        x: p.x * CELL_X,
+        y: p.y * CELL_Y,
+      }));
+      out.push({
+        d: smoothPath(pts, closed),
+        isIndex,
+        depth: (v - minV) / (maxV - minV),
+      });
+    }
+    levelIdx++;
   }
   return out;
 }
 
-// Pre-compute the topographic field once at module load
-const TOPO_CONTOURS = [
-  // Main summit, upper-left quadrant
-  ...buildPeak({ cx: 92, cy: 78, rx: 96, ry: 72, rotation: -0.18, seed: 1031, rings: 9 }),
-  // Secondary summit, lower-right
-  ...buildPeak({ cx: 218, cy: 142, rx: 70, ry: 50, rotation: 0.42, seed: 7727, rings: 7 }),
-  // Small ridge bump, upper-right
-  ...buildPeak({ cx: 245, cy: 52, rx: 28, ry: 22, rotation: 0.65, seed: 4421, rings: 4 }),
-  // Tiny crag, lower-left edge
-  ...buildPeak({ cx: 36, cy: 172, rx: 22, ry: 17, rotation: -0.05, seed: 9133, rings: 3 }),
-];
+const TOPO_CONTOURS = buildContourField();
 
 /**
  * Voice selection screen — appears between landing and assessment.
@@ -204,11 +320,11 @@ export default function VoiceSelection({ value, onChange, onContinue, onSkip, fa
       overflow: "hidden",
     },
     terrainGlow: {
-      // Soft warm light pooling near the main summit
+      // Subtle warm light pooling along the ridge band
       position: "absolute",
       inset: 0,
       background:
-        "radial-gradient(circle at 35% 38%, rgba(255,205,130,0.18) 0%, transparent 45%)",
+        "radial-gradient(circle at 65% 60%, rgba(255,200,120,0.10) 0%, transparent 55%)",
       mixBlendMode: "screen",
       pointerEvents: "none",
     },
@@ -308,13 +424,14 @@ export default function VoiceSelection({ value, onChange, onContinue, onSkip, fa
                       style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
                       aria-hidden="true"
                     >
-                      <g fill="none" stroke="#D9A058" strokeLinejoin="round" strokeLinecap="round">
+                      <g fill="none" strokeLinejoin="round" strokeLinecap="round">
                         {TOPO_CONTOURS.map((c, i) => (
                           <path
                             key={i}
                             d={c.d}
-                            strokeWidth={c.isIndex ? 0.95 : 0.55}
-                            opacity={(0.22 + c.depth * 0.55) * (c.isIndex ? 1.15 : 1)}
+                            stroke={c.isIndex ? "#E8B870" : "#C9924A"}
+                            strokeWidth={c.isIndex ? 1.25 : 0.7}
+                            opacity={c.isIndex ? 0.85 : 0.55 + c.depth * 0.25}
                           />
                         ))}
                       </g>
