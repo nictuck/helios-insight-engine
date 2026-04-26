@@ -3,6 +3,10 @@ import { useState, useEffect } from "react";
 /**
  * Voice selection screen — appears between landing and assessment.
  * Users pick between Hearth (grounded-coach) and Horizon (systems-observer).
+ *
+ * Clicking a voice card both selects it AND advances to the assessment —
+ * there is no separate "Begin assessment" button. The skip link below
+ * the cards lets users defer the choice and let Helios pick the default.
  */
 export default function VoiceSelection({ value, onChange, onContinue, onSkip, fadeIn }) {
   const [hovered, setHovered] = useState(null);
@@ -39,10 +43,15 @@ export default function VoiceSelection({ value, onChange, onContinue, onSkip, fa
     },
   ];
 
+  const choose = (id) => {
+    onChange(id);
+    onContinue();
+  };
+
   const handleKey = (e, id) => {
     if (e.key === " " || e.key === "Enter") {
       e.preventDefault();
-      onChange(id);
+      choose(id);
     }
   };
 
@@ -54,11 +63,11 @@ export default function VoiceSelection({ value, onChange, onContinue, onSkip, fa
     },
     framing: {
       fontFamily: "'Cormorant Garamond', serif",
-      fontSize: "clamp(1.4rem, 3.5vw, 1.8rem)",
+      fontSize: "clamp(1.3rem, 3.5vw, 1.8rem)",
       fontWeight: 300,
       lineHeight: 1.35,
       color: "var(--text)",
-      marginBottom: 36,
+      marginBottom: isMobile ? 24 : 36,
       textAlign: "center",
       letterSpacing: "-0.01em",
       maxWidth: 520,
@@ -67,12 +76,13 @@ export default function VoiceSelection({ value, onChange, onContinue, onSkip, fa
     },
     cards: {
       display: "flex",
-      flexDirection: isMobile ? "column" : "row",
-      gap: 20,
-      marginBottom: 40,
+      flexDirection: "row",
+      gap: isMobile ? 10 : 20,
+      marginBottom: isMobile ? 24 : 32,
     },
     card: (selected, isHover) => ({
       flex: 1,
+      minWidth: 0,
       background: selected
         ? "var(--glass-card-hover)"
         : isHover
@@ -135,21 +145,21 @@ export default function VoiceSelection({ value, onChange, onContinue, onSkip, fa
         "linear-gradient(90deg, transparent 0%, rgba(237,232,220,0.4) 50%, transparent 100%)",
     },
     cardBody: {
-      padding: "26px 24px 28px",
+      padding: isMobile ? "16px 12px 18px" : "26px 24px 28px",
       textAlign: "center",
     },
     name: {
-      fontSize: "1.9rem",
+      fontSize: isMobile ? "1.3rem" : "1.9rem",
       fontWeight: 400,
       fontFamily: "'Cormorant Garamond', serif",
       color: "var(--text)",
-      marginBottom: 12,
+      marginBottom: isMobile ? 6 : 12,
       letterSpacing: "-0.01em",
       textAlign: "center",
     },
     cue: {
-      fontSize: "1.05rem",
-      lineHeight: 1.55,
+      fontSize: isMobile ? "0.78rem" : "1.05rem",
+      lineHeight: 1.45,
       color: "var(--text-dim)",
       fontStyle: "italic",
       fontFamily: "'Cormorant Garamond', serif",
@@ -162,7 +172,7 @@ export default function VoiceSelection({ value, onChange, onContinue, onSkip, fa
     },
     skip: {
       display: "block",
-      margin: "20px auto 0",
+      margin: "8px auto 0",
       background: "none",
       border: "none",
       color: "var(--muted)",
@@ -197,7 +207,7 @@ export default function VoiceSelection({ value, onChange, onContinue, onSkip, fa
               role="radio"
               aria-checked={selected}
               tabIndex={0}
-              onClick={() => onChange(v.id)}
+              onClick={() => choose(v.id)}
               onKeyDown={(e) => handleKey(e, v.id)}
               onMouseEnter={() => setHovered(v.id)}
               onMouseLeave={() => setHovered(null)}
@@ -226,14 +236,6 @@ export default function VoiceSelection({ value, onChange, onContinue, onSkip, fa
       </div>
 
       <div style={styles.btnWrap}>
-        <button
-          type="button"
-          className="ie-btn ie-btn--primary"
-          style={{ width: isMobile ? "100%" : "auto" }}
-          onClick={onContinue}
-        >
-          Begin assessment
-        </button>
         <button type="button" style={styles.skip} onClick={onSkip}>
           Let Helios choose for me.
         </button>
