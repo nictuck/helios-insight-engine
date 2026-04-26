@@ -114,18 +114,33 @@ export default function VoiceSelection({ value, onChange, onContinue, onSkip, fa
       position: "relative",
       overflow: "hidden",
     },
-    hearthVisual: {
+    terrainVisual: {
       width: "100%",
       height: "100%",
-      background:
-        "radial-gradient(circle at 50% 65%, #F5B14A 0%, #E08440 22%, #9C3A2E 52%, #3A1410 82%, #1A0F0A 100%)",
+      // Stacked radial gradients build receding hill silhouettes
+      // over a warm sunset sky. Drawn back-to-front: sky first,
+      // then haze, then hills from distant to nearest (CSS paints
+      // earlier layers on top of later ones in the comma list).
+      background: [
+        // Nearest hill (darkest, low and wide)
+        "radial-gradient(ellipse 95% 55% at 50% 118%, #2E1A0E 0%, #2E1A0E 49%, transparent 50%)",
+        // Mid hill (sienna, off-center right)
+        "radial-gradient(ellipse 75% 45% at 78% 102%, #5C3820 0%, #5C3820 49%, transparent 50%)",
+        // Inner ridge (umber, off-center left)
+        "radial-gradient(ellipse 65% 38% at 22% 95%, #8B5A2E 0%, #8B5A2E 49%, transparent 50%)",
+        // Distant ridge (ochre haze)
+        "radial-gradient(ellipse 80% 26% at 55% 88%, #B8803E 0%, #B8803E 49%, transparent 50%)",
+        // Sky
+        "linear-gradient(180deg, #F4D89A 0%, #EBA968 32%, #D87A3A 58%, #8E3F1E 85%, #3A1A0E 100%)",
+      ].join(", "),
       position: "relative",
     },
-    hearthGlow: {
+    terrainGlow: {
+      // Soft sunset sun haloing the back ridge
       position: "absolute",
       inset: 0,
       background:
-        "radial-gradient(circle at 50% 65%, rgba(255,210,140,0.35) 0%, transparent 35%)",
+        "radial-gradient(circle at 55% 84%, rgba(255,225,160,0.55) 0%, rgba(255,200,120,0.18) 18%, transparent 36%)",
       mixBlendMode: "screen",
     },
     horizonVisual: {
@@ -217,8 +232,8 @@ export default function VoiceSelection({ value, onChange, onContinue, onSkip, fa
             >
               <div style={styles.visual} aria-hidden="true">
                 {v.id === "grounded-coach" ? (
-                  <div style={styles.hearthVisual}>
-                    <div style={styles.hearthGlow} />
+                  <div style={styles.terrainVisual}>
+                    <div style={styles.terrainGlow} />
                   </div>
                 ) : (
                   <div style={styles.horizonVisual}>
