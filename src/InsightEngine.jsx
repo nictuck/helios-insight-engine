@@ -204,7 +204,7 @@ function SliderInput({ value, onChange }) {
 function HeliosWordmark() {
   return (
     <span className="helios-wordmark" aria-label="Helios">
-      HEL
+      HELI
       <span className="helios-wordmark__icon" aria-hidden="true">
         <span className="helios-wordmark__sun"></span>
         <span className="helios-wordmark__orbit helios-wordmark__orbit--1">
@@ -214,7 +214,7 @@ function HeliosWordmark() {
           <span className="helios-wordmark__planet helios-wordmark__planet--2"></span>
         </span>
       </span>
-      OS
+      S
     </span>
   );
 }
