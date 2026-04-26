@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 /**
  * Voice selection screen — appears between landing and assessment.
- * Users pick between Hearth (grounded-coach) and Horizon (systems-observer).
+ * Users pick between Terrain (grounded-coach) and Horizon (systems-observer).
  *
  * Clicking a voice card both selects it AND advances to the assessment —
  * there is no separate "Begin assessment" button. The skip link below
@@ -33,7 +33,7 @@ export default function VoiceSelection({ value, onChange, onContinue, onSkip, fa
   const voices = [
     {
       id: "grounded-coach",
-      name: "Hearth",
+      name: "Terrain",
       cue: "Let's start with what's actually here.",
     },
     {
