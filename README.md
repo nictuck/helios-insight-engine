@@ -1,6 +1,6 @@
 # Helios Insight Engine
 
-A self-discovery assessment tool for Helios Integrative Health. Users take the Life Diagnostic assessment, see an interactive radar chart of their results, and receive personalized insights.
+A self-discovery assessment tool for Helios Integrative Health. Users take the Helios Assessment, see an interactive radar chart of their results, and receive personalized insights.
 
 ## Status
 

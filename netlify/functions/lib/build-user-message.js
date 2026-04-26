@@ -23,7 +23,7 @@ export function buildUserMessage({ scores, behavioral, totalDurationSeconds, opt
     })
     .sort((a, b) => a.score - b.score);
 
-  let message = `Here are this person's Life Diagnostic scores, from lowest to highest:\n\n`;
+  let message = `Here are this person's Helios Assessment scores, from lowest to highest:\n\n`;
 
   for (const item of sorted) {
     let line = `- ${item.label}: ${item.score}/10`;

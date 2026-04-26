@@ -53,7 +53,7 @@ const MOCK_INSIGHTS = (scores) => {
   const lowest = sorted.slice(0, 2).map(([k]) => CATEGORIES.find((c) => c.id === k));
   const highest = sorted.slice(-2).map(([k]) => CATEGORIES.find((c) => c.id === k));
 
-  return `Your Life Diagnostic reveals a rich and nuanced picture. Your strongest areas — **${highest[1]?.label}** and **${highest[0]?.label}** — reflect real investment and intention. These are foundations you can build from.
+  return `Your Helios Assessment reveals a rich and nuanced picture. Your strongest areas — **${highest[1]?.label}** and **${highest[0]?.label}** — reflect real investment and intention. These are foundations you can build from.
 
 At the same time, **${lowest[0]?.label}** (${scores[lowest[0]?.id]}/10) and **${lowest[1]?.label}** (${scores[lowest[1]?.id]}/10) are asking for your attention. This isn't about failure — it's about signal. These areas are telling you where growth wants to happen next.
 
@@ -574,7 +574,7 @@ export default function InsightEngine() {
         {screen === "landing" && (
           <div style={{ opacity: fadeIn ? 1 : 0, transition: "opacity 0.8s ease", transitionDelay: "0.1s" }}>
             <p className="ie-label" style={{ textAlign: "center", display: "block", marginBottom: 20 }}>
-              Life Diagnostic
+              Helios Assessment
             </p>
             <h1 className="ie-h1">
               Where your energy is <em>flowing</em>
@@ -706,7 +706,7 @@ export default function InsightEngine() {
 
         {screen === "results" && (
           <div style={{ opacity: fadeIn ? 1 : 0, transition: "opacity 0.6s ease", transitionDelay: "0.1s" }}>
-            <h1 className="ie-h1" style={{ marginBottom: 8 }}>Your Life <em>Diagnostic</em></h1>
+            <h1 className="ie-h1" style={{ marginBottom: 8 }}>Your Helios <em>Assessment</em></h1>
             <p className="ie-subtitle" style={{ marginBottom: 12 }}>
               Each shape represents a dimension of your life. Larger blooms are thriving. Smaller ones are asking for attention. The brighter the center, the more balanced your life feels.
             </p>

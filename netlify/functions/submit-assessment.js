@@ -64,7 +64,7 @@ function buildPractitionerEmail(email, scores, insights, optionalResponses) {
         <span style="color:rgba(212,165,116,0.5);font-size:12px;letter-spacing:4px;text-transform:uppercase;">Helios Insight Engine</span>
       </div>
       <h1 style="color:#D4A574;font-size:22px;font-weight:300;margin:0 0 8px;">New Assessment Opt-In</h1>
-      <p style="color:#EBE1D2;font-size:15px;margin:0 0 24px;">A prospective client has completed the Life Diagnostic and wants to connect.</p>
+      <p style="color:#EBE1D2;font-size:15px;margin:0 0 24px;">A prospective client has completed the Helios Assessment and wants to connect.</p>
 
       <div style="background:#13131a;border:1px solid #1a1a24;border-radius:8px;padding:16px;margin-bottom:24px;">
         <p style="color:rgba(212,165,116,0.6);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px;">Contact</p>
@@ -88,7 +88,7 @@ function buildPractitionerEmail(email, scores, insights, optionalResponses) {
       ` : ""}
 
       <div style="background:#13131a;border:1px solid #1a1a24;border-radius:8px;padding:16px;margin-bottom:24px;">
-        <p style="color:rgba(212,165,116,0.6);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:0 0 12px;">Life Diagnostic Scores</p>
+        <p style="color:rgba(212,165,116,0.6);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:0 0 12px;">Helios Assessment Scores</p>
         <table style="width:100%;border-collapse:collapse;">
           ${scoreRows}
         </table>
@@ -142,11 +142,11 @@ function buildUserConfirmationEmail(scores, insights) {
       <div style="text-align:center;margin-bottom:24px;">
         <span style="color:rgba(212,165,116,0.5);font-size:12px;letter-spacing:4px;text-transform:uppercase;">Helios</span>
       </div>
-      <h1 style="color:#D4A574;font-size:24px;font-weight:300;margin:0 0 8px;text-align:center;">Your Life Diagnostic</h1>
+      <h1 style="color:#D4A574;font-size:24px;font-weight:300;margin:0 0 8px;text-align:center;">Your Helios Assessment</h1>
       <p style="color:rgba(235,225,210,0.6);font-size:15px;text-align:center;margin:0 0 32px;">Thank you for taking the time to look inward. Here are your full results.</p>
 
       <div style="background:#13131a;border:1px solid #1a1a24;border-radius:8px;padding:16px;margin-bottom:24px;">
-        <p style="color:rgba(212,165,116,0.6);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:0 0 12px;">Life Diagnostic Scores</p>
+        <p style="color:rgba(212,165,116,0.6);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin:0 0 12px;">Helios Assessment Scores</p>
         <table style="width:100%;border-collapse:collapse;">
           ${scoreRows}
         </table>
@@ -177,7 +177,7 @@ function buildUserConfirmationEmail(scores, insights) {
 
       <p style="color:rgba(212,165,116,0.2);font-size:11px;text-align:center;margin-top:32px;line-height:1.6;">
         Helios Integrative Health<br>
-        You're receiving this because you requested your Life Diagnostic results.
+        You're receiving this because you requested your Helios Assessment results.
       </p>
     </div>
   `;
@@ -215,14 +215,14 @@ export const handler = async (event) => {
     await resend.emails.send({
       from: "Helios Insight Engine <no-reply@heliosintegrativehealth.com>",
       to: PRACTITIONER_EMAILS,
-      subject: `New Life Diagnostic Opt-In: ${email}`,
+      subject: `New Helios Assessment Opt-In: ${email}`,
       html: buildPractitionerEmail(email, scores, insights || "", optionalResponses || {}),
     });
 
     await resend.emails.send({
       from: "Helios <no-reply@heliosintegrativehealth.com>",
       to: [email],
-      subject: "Your Life Diagnostic Results — Helios",
+      subject: "Your Helios Assessment Results",
       html: buildUserConfirmationEmail(scores, insights || ""),
     });
 
