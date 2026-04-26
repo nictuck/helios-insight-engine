@@ -243,7 +243,11 @@ function ThemeToggle({ theme, onToggle }) {
 }
 
 export default function InsightEngine() {
-  const [screen, setScreen] = useState("landing");
+  const [screen, setScreen] = useState(() => {
+    if (typeof window === "undefined") return "landing";
+    const from = new URLSearchParams(window.location.search).get("from");
+    return from && from.toLowerCase() === "helios-site" ? "voice" : "landing";
+  });
   const [currentCategory, setCurrentCategory] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -332,6 +336,14 @@ export default function InsightEngine() {
   };
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const from = params.get("from");
+    if (from && from.toLowerCase() === "helios-site") {
+      params.delete("from");
+      const qs = params.toString();
+      const newUrl = window.location.pathname + (qs ? `?${qs}` : "") + window.location.hash;
+      window.history.replaceState({}, "", newUrl);
+    }
     if (new URLSearchParams(window.location.search).has("preview")) {
       const previewScores = {
         career: 5, relationships: 7, health: 3, finance: 8,
