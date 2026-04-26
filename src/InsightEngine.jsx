@@ -576,7 +576,7 @@ export default function InsightEngine() {
   return (
     <div className="ie-app">
       <nav className={`ie-nav${scrolled ? " scrolled" : ""}`}>
-        <a href="#" className="nav-logo" onClick={(e) => { e.preventDefault(); resetAssessment(); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+        <a href="https://heliosintegrativehealth.com" className="nav-logo" aria-label="Helios Integrative Health home">
           <HeliosWordmark />
         </a>
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
