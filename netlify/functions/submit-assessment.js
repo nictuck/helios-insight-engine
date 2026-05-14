@@ -3,7 +3,8 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const PRACTITIONER_EMAILS = [
-  "nic@coachnictuck.com",
+  "nic@heliosintegrativehealth.com",
+  "francesca@heliosintegrativehealth.com",
 ];
 
 const RATE_LIMIT_MAP = new Map();
