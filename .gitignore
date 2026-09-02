@@ -30,3 +30,8 @@ dist-ssr
 # Project-local Claude notes (contains tester password)
 CLAUDE.md
 .claude/
+
+# Local secrets — never commit (repo is public)
+.env*
+env*
+*.rtf
